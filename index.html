@@ -8,99 +8,224 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0f14;--glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.08);
-  --ghov:rgba(255,255,255,0.07);--accent:#6ee7b7;--adim:rgba(110,231,183,0.12);
-  --aglow:rgba(110,231,183,0.25);--indigo:#818cf8;--idim:rgba(129,140,248,0.12);
-  --wrong:#f87171;--wdim:rgba(248,113,113,0.12);
-  --text:#e8eaf0;--muted:#6b7280;--dim:#9ca3af;
+  --bg:#0a0c10;
+  --glass:rgba(255,255,255,0.04);
+  --gb:rgba(255,255,255,0.08);
+  --ghov:rgba(255,255,255,0.07);
+  --accent:#6ee7b7;
+  --adim:rgba(110,231,183,0.12);
+  --aglow:rgba(110,231,183,0.3);
+  --indigo:#818cf8;
+  --idim:rgba(129,140,248,0.12);
+  --wrong:#f87171;
+  --wdim:rgba(248,113,113,0.12);
+  --text:#e8eaf0;
+  --muted:#6b7280;
+  --dim:#9ca3af;
   --r:16px;--rs:10px;
 }
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;top:-30%;left:-20%;width:70%;height:70%;background:radial-gradient(ellipse,rgba(110,231,183,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
-body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60%;background:radial-gradient(ellipse,rgba(99,102,241,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── ANIMATED BACKGROUND ── */
+.bg-canvas{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+}
+.bg-canvas canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+}
+/* Soft radial glows */
+.bg-glow{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+.bg-glow::before{
+  content:'';position:absolute;
+  top:-20%;left:-10%;
+  width:60%;height:70%;
+  background:radial-gradient(ellipse,rgba(110,231,183,0.07) 0%,transparent 70%);
+  animation:glowDrift1 18s ease-in-out infinite alternate;
+}
+.bg-glow::after{
+  content:'';position:absolute;
+  bottom:-20%;right:-5%;
+  width:55%;height:65%;
+  background:radial-gradient(ellipse,rgba(99,102,241,0.07) 0%,transparent 70%);
+  animation:glowDrift2 22s ease-in-out infinite alternate;
+}
+@keyframes glowDrift1{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(5%,8%) scale(1.15)}
+}
+@keyframes glowDrift2{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(-6%,-5%) scale(1.1)}
+}
 
 .screen{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
 .screen.hidden{display:none!important}
 
-/* HOME */
+/* ── HOME ── */
 #home{flex-direction:column;gap:2rem;text-align:center}
 .home-inner{width:100%;max-width:720px;margin:0 auto}
 
-.exam-toggle{display:inline-flex;gap:4px;padding:4px;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid var(--gb);margin-bottom:2.5rem}
-.etog{padding:9px 22px;border-radius:100px;border:none;background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s}
+.exam-toggle{
+  display:inline-flex;gap:4px;padding:4px;
+  border-radius:100px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--gb);
+  margin-bottom:2.5rem;
+}
+.etog{
+  padding:9px 22px;border-radius:100px;border:none;
+  background:transparent;color:var(--dim);
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+  display:flex;align-items:center;gap:7px;
+}
+.etog svg{width:15px;height:15px;flex-shrink:0}
 .etog.active{background:var(--adim);color:var(--accent);border:1px solid rgba(110,231,183,0.3)}
 
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem}
-.mode-card{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:1.5rem;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:left;position:relative;overflow:hidden}
-.mode-card::after{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity 0.25s;pointer-events:none}
-.mc-batch::after{background:linear-gradient(135deg,var(--adim),transparent)}
-.mc-all::after{background:linear-gradient(135deg,var(--idim),transparent)}
-.mode-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.35)}
-.mc-batch:hover{border-color:rgba(110,231,183,0.35)}
-.mc-all:hover{border-color:rgba(129,140,248,0.35)}
-.mode-card:hover::after{opacity:1}
-.mc-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;position:relative;z-index:1}
+.mode-card{
+  background:var(--glass);border:1px solid var(--gb);
+  border-radius:var(--r);padding:1.6rem;
+  cursor:pointer;
+  transition:all 0.28s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  text-align:left;position:relative;overflow:hidden;
+}
+.mode-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  opacity:0;transition:opacity 0.28s;pointer-events:none;
+}
+.mc-batch::before{background:linear-gradient(135deg,rgba(110,231,183,0.06),transparent 70%)}
+.mc-all::before{background:linear-gradient(135deg,rgba(129,140,248,0.06),transparent 70%)}
+.mode-card:hover{transform:translateY(-4px);}
+.mc-batch:hover{border-color:rgba(110,231,183,0.4);box-shadow:0 20px 60px rgba(110,231,183,0.08)}
+.mc-all:hover{border-color:rgba(129,140,248,0.4);box-shadow:0 20px 60px rgba(129,140,248,0.08)}
+.mode-card:hover::before{opacity:1}
+
+.mc-icon{
+  width:46px;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:1.1rem;position:relative;z-index:1;
+}
+.mc-icon svg{width:22px;height:22px}
 .mc-batch .mc-icon{background:var(--adim);border:1px solid rgba(110,231,183,0.2)}
 .mc-all .mc-icon{background:var(--idim);border:1px solid rgba(129,140,248,0.2)}
+.mc-batch .mc-icon svg{stroke:var(--accent)}
+.mc-all .mc-icon svg{stroke:var(--indigo)}
+
 .mc-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:0.4rem;position:relative;z-index:1}
 .mc-desc{color:var(--muted);font-size:0.82rem;line-height:1.55;margin-bottom:1rem;position:relative;z-index:1}
 .mc-tags{display:flex;gap:0.4rem;flex-wrap:wrap;position:relative;z-index:1}
-.mc-tag{font-size:0.7rem;font-weight:500;padding:3px 9px;border-radius:100px}
+.mc-tag{
+  font-size:0.7rem;font-weight:500;padding:3px 9px;
+  border-radius:100px;display:flex;align-items:center;gap:4px;
+}
+.mc-tag svg{width:10px;height:10px}
 .mc-batch .mc-tag{background:var(--adim);color:var(--accent);border:1px solid rgba(110,231,183,0.2)}
 .mc-all .mc-tag{background:var(--idim);color:var(--indigo);border:1px solid rgba(129,140,248,0.2)}
 
-/* QUIZ */
-#quiz{flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0}
+/* ── PROGRESS BAR ── */
+.pbar-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.05);z-index:100}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a5f3fc);transition:width 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 10px var(--aglow)}
 
-.pbar-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.06);z-index:100}
-.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a5f3fc);transition:width 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 12px var(--aglow)}
-
-.qhdr{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(13,15,20,0.88);border-bottom:1px solid var(--gb);padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.qhdr-left{display:flex;flex-direction:column;gap:1px;min-width:0}
+/* ── QUIZ HEADER ── */
+.qhdr{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  background:rgba(10,12,16,0.88);
+  border-bottom:1px solid var(--gb);
+  padding:0.75rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;
+}
+.qhdr-btn-home{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:9px;
+  background:var(--glass);border:1px solid var(--gb);
+  cursor:pointer;transition:all 0.2s;flex-shrink:0;color:var(--dim);
+}
+.qhdr-btn-home:hover{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.3);color:var(--wrong)}
+.qhdr-btn-home svg{width:15px;height:15px;stroke:currentColor}
+.qhdr-left{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
 .qhdr-name{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:600;color:var(--muted)}
 .qhdr-batch{font-size:0.68rem;color:var(--muted)}
 .qhdr-batch span{color:var(--accent);font-weight:600}
 .qctr{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--muted);flex-shrink:0}
 .qctr em{color:var(--text);font-style:normal}
-.qstats{display:flex;gap:0.6rem;align-items:center;flex-shrink:0}
-.schip{display:flex;align-items:center;gap:4px;font-size:0.77rem;font-weight:500;padding:3px 10px;border-radius:100px}
+.qstats{display:flex;gap:0.5rem;align-items:center;flex-shrink:0}
+.schip{display:flex;align-items:center;gap:4px;font-size:0.77rem;font-weight:500;padding:3px 9px;border-radius:100px}
+.schip svg{width:11px;height:11px}
 .schip.c{background:rgba(110,231,183,0.1);color:var(--accent);border:1px solid rgba(110,231,183,0.2)}
 .schip.w{background:rgba(248,113,113,0.1);color:var(--wrong);border:1px solid rgba(248,113,113,0.2)}
 
 /* TIMER */
-.timer-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.timer-wrap{display:flex;align-items:center;flex-shrink:0}
 .timer-ring{position:relative;width:36px;height:36px}
 .timer-ring svg{transform:rotate(-90deg)}
-.timer-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:3}
-.timer-arc{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:94.25;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s}
-.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text)}
+.tbg{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:3}
+.tarc{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:94.25;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s}
+.tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;color:var(--text)}
 
+/* ── QUIZ BODY ── */
 .qbody{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:2.25rem 1rem 5rem}
 .qwrap{width:100%;max-width:700px;animation:slideUp 0.32s cubic-bezier(0.4,0,0.2,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-.qnum{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.8rem;display:flex;align-items:center;gap:8px}
+.qnum{
+  font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:0.8rem;display:flex;align-items:center;gap:8px;
+}
 .qnum::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(110,231,183,0.2),transparent)}
-.qtext{font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.25rem);font-weight:600;line-height:1.55;margin-bottom:1.6rem;color:var(--text)}
+.qtext{font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.25rem);font-weight:600;line-height:1.55;margin-bottom:1.6rem}
 .alist{display:flex;flex-direction:column;gap:0.55rem}
-.abtn{display:flex;align-items:flex-start;gap:0.8rem;padding:0.85rem 1rem;background:var(--glass);border:1px solid var(--gb);border-radius:var(--rs);cursor:pointer;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);text-align:left;width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;line-height:1.5;position:relative;overflow:hidden}
+.abtn{
+  display:flex;align-items:flex-start;gap:0.8rem;
+  padding:0.85rem 1rem;
+  background:var(--glass);border:1px solid var(--gb);
+  border-radius:var(--rs);cursor:pointer;
+  transition:all 0.18s cubic-bezier(0.4,0,0.2,1);
+  text-align:left;width:100%;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;line-height:1.5;
+  position:relative;overflow:hidden;
+}
 .abtn:not(.disabled):hover{border-color:rgba(110,231,183,0.35);transform:translateX(3px);background:rgba(255,255,255,0.06)}
-.albl{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;transition:all 0.2s;color:var(--dim);position:relative;z-index:1}
+.albl{
+  flex-shrink:0;width:26px;height:26px;border-radius:7px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;
+  transition:all 0.2s;color:var(--dim);position:relative;z-index:1;
+}
 .atxt{position:relative;z-index:1;padding-top:3px;font-family:monospace;font-size:0.88rem;word-break:break-all}
 .atxt.normal{font-family:'DM Sans',sans-serif;font-size:0.92rem;word-break:normal}
+
 .abtn.correct{border-color:rgba(110,231,183,0.5);background:var(--adim);animation:cpulse 0.35s ease}
-.abtn.correct .albl{background:var(--accent);border-color:var(--accent);color:#0d0f14}
+.abtn.correct .albl{background:var(--accent);border-color:var(--accent);color:#0a0c10}
 @keyframes cpulse{0%{transform:scale(1)}50%{transform:scale(1.01)}100%{transform:scale(1)}}
 .abtn.wrong{border-color:rgba(248,113,113,0.4);background:var(--wdim);animation:shake 0.38s ease}
-.abtn.wrong .albl{background:var(--wrong);border-color:var(--wrong);color:#0d0f14}
+.abtn.wrong .albl{background:var(--wrong);border-color:var(--wrong);color:#0a0c10}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}60%{transform:translateX(5px)}80%{transform:translateX(-3px)}}
 .abtn.reveal{border-color:rgba(110,231,183,0.3);background:rgba(110,231,183,0.05)}
 .abtn.reveal .albl{background:rgba(110,231,183,0.2);border-color:rgba(110,231,183,0.4);color:var(--accent)}
 .abtn.disabled{cursor:default;pointer-events:none}
-.abtn.timeout{border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.04)}
+.abtn.timeout{border-color:rgba(248,113,113,0.2)}
 
-.feedback{margin-top:1rem;padding:0.75rem 1rem;border-radius:var(--rs);font-size:0.85rem;font-weight:500;display:flex;align-items:center;gap:0.65rem;opacity:0;transition:opacity 0.2s}
+.feedback{
+  margin-top:1rem;padding:0.75rem 1rem;border-radius:var(--rs);
+  font-size:0.85rem;font-weight:500;
+  display:flex;align-items:center;gap:0.65rem;
+  opacity:0;transition:opacity 0.2s;
+}
+.feedback svg{width:14px;height:14px;flex-shrink:0}
 .feedback.vis{opacity:1;animation:fadeIn 0.22s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .feedback.correct{background:var(--adim);border:1px solid rgba(110,231,183,0.25);color:var(--accent)}
@@ -108,14 +233,69 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
 
 .nxtwrap{margin-top:1.4rem;display:flex;justify-content:flex-end;opacity:0;transform:translateY(7px);transition:all 0.3s 0.12s;pointer-events:none}
 .nxtwrap.vis{opacity:1;transform:translateY(0);pointer-events:all}
-.btnnxt{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:100px;background:var(--accent);border:none;color:#0d0f14;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btnnxt:hover{background:#a7f3d0;transform:scale(1.03);box-shadow:0 0 28px var(--aglow)}
-.btnnxt svg{transition:transform 0.2s}
+.btnnxt{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:11px 22px;border-radius:100px;
+  background:var(--accent);border:none;color:#0a0c10;
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.btnnxt:hover{background:#a7f3d0;transform:scale(1.03);box-shadow:0 0 30px var(--aglow)}
+.btnnxt svg{width:14px;height:14px;stroke:currentColor;transition:transform 0.2s;flex-shrink:0}
 .btnnxt:hover svg{transform:translateX(3px)}
 
-/* BATCH RESULT */
+/* HOME CONFIRM MODAL */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-overlay.vis{opacity:1;pointer-events:all}
+.modal{
+  background:#13161e;border:1px solid var(--gb);border-radius:20px;
+  padding:2rem 1.75rem;max-width:380px;width:100%;
+  text-align:center;
+  animation:modalIn 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes modalIn{from{transform:scale(0.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-icon{
+  width:52px;height:52px;border-radius:14px;
+  background:var(--wdim);border:1px solid rgba(248,113,113,0.2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;
+}
+.modal-icon svg{width:24px;height:24px;stroke:var(--wrong)}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:0.5rem}
+.modal-desc{color:var(--muted);font-size:0.86rem;line-height:1.6;margin-bottom:1.5rem}
+.modal-actions{display:flex;gap:0.6rem}
+.modal-cancel{
+  flex:1;padding:10px;border-radius:100px;
+  background:var(--glass);border:1px solid var(--gb);
+  color:var(--dim);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.modal-cancel:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
+.modal-confirm{
+  flex:1;padding:10px;border-radius:100px;
+  background:var(--wdim);border:1px solid rgba(248,113,113,0.3);
+  color:var(--wrong);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.modal-confirm:hover{background:rgba(248,113,113,0.2);box-shadow:0 0 20px rgba(248,113,113,0.15)}
+
+/* ── BATCH RESULT ── */
 #batchResult{flex-direction:column;align-items:center;gap:1.75rem;text-align:center;padding:2.5rem 1rem}
-.bcard{width:100%;max-width:500px;background:var(--glass);border:1px solid var(--gb);border-radius:22px;padding:2.25rem 1.75rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;animation:slideUp 0.45s cubic-bezier(0.4,0,0.2,1)}
+.bcard{
+  width:100%;max-width:500px;
+  background:var(--glass);border:1px solid var(--gb);
+  border-radius:22px;padding:2.25rem 1.75rem;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  position:relative;overflow:hidden;
+  animation:slideUp 0.45s cubic-bezier(0.4,0,0.2,1);
+}
 .bcard::before{content:'';position:absolute;top:-40%;left:-15%;width:130%;height:90%;background:radial-gradient(ellipse,rgba(110,231,183,0.05) 0%,transparent 65%);pointer-events:none}
 .bscore{display:flex;align-items:center;justify-content:center;gap:1.25rem;margin-bottom:1.4rem}
 .bnum{font-family:'Syne',sans-serif;font-weight:800;line-height:1}
@@ -131,20 +311,26 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
 .bactions{display:flex;gap:0.6rem;flex-wrap:wrap}
 .bsec{flex:1;min-width:100px;padding:10px 14px;border-radius:100px;background:var(--glass);border:1px solid var(--gb);color:var(--dim);font-family:'DM Sans',sans-serif;font-size:0.83rem;font-weight:500;cursor:pointer;transition:all 0.2s}
 .bsec:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
-.bpri{flex:1;min-width:110px;padding:10px 16px;border-radius:100px;background:var(--accent);border:none;color:#0d0f14;font-family:'DM Sans',sans-serif;font-size:0.83rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.bpri{flex:1;min-width:110px;padding:10px 16px;border-radius:100px;background:var(--accent);border:none;color:#0a0c10;font-family:'DM Sans',sans-serif;font-size:0.83rem;font-weight:600;cursor:pointer;transition:all 0.2s}
 .bpri:hover{background:#a7f3d0;box-shadow:0 0 22px var(--aglow);transform:scale(1.02)}
 
-/* RESULTS */
+/* ── FINAL RESULTS ── */
 #results{flex-direction:column;align-items:center;gap:1.75rem;text-align:center;padding:2.5rem 1rem}
-.rcard{width:100%;max-width:520px;background:var(--glass);border:1px solid var(--gb);border-radius:22px;padding:2.5rem 2rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;animation:slideUp 0.5s cubic-bezier(0.4,0,0.2,1)}
+.rcard{
+  width:100%;max-width:520px;
+  background:var(--glass);border:1px solid var(--gb);
+  border-radius:22px;padding:2.5rem 2rem;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  position:relative;overflow:hidden;
+  animation:slideUp 0.5s cubic-bezier(0.4,0,0.2,1);
+}
 .rcard::before{content:'';position:absolute;top:-50%;left:-20%;width:140%;height:100%;background:radial-gradient(ellipse,rgba(110,231,183,0.06) 0%,transparent 60%);pointer-events:none}
 .sring-wrap{display:flex;justify-content:center;margin-bottom:1.5rem}
 .sring{position:relative;width:130px;height:130px}
 .sring svg{transform:rotate(-90deg)}
 .sring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
 .sring-fill{fill:none;stroke:url(#sg);stroke-width:8;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s}
-.sring-fill.low{stroke:var(--wrong)}
-.sring-fill.mid{stroke:#fbbf24}
+.sring-fill.low{stroke:var(--wrong)}.sring-fill.mid{stroke:#fbbf24}
 .stxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .spct{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;line-height:1}
 .spct.high{color:var(--accent)}.spct.mid{color:#fbbf24}.spct.low{color:var(--wrong)}
@@ -158,50 +344,154 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
 .rstat-l{font-size:0.67rem;color:var(--muted);font-weight:500;letter-spacing:0.04em;text-transform:uppercase}
 .raction{display:flex;gap:0.6rem;flex-wrap:wrap}
 
+/* ── TIMER CONTROL ── */
+.timer-control{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1.25rem;
+  background:var(--glass);
+  border:1px solid var(--gb);
+  border-radius:var(--r);
+  padding:1rem 1.25rem;
+  margin-bottom:0.875rem;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:border-color 0.2s;
+}
+.timer-control:hover{border-color:rgba(110,231,183,0.2)}
+.tc-left{display:flex;align-items:center;gap:0.875rem}
+.tc-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--adim);border:1px solid rgba(110,231,183,0.2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.tc-icon svg{width:17px;height:17px;stroke:var(--accent)}
+.tc-label{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.tc-desc{font-size:0.75rem;color:var(--muted)}
+.tc-right{display:flex;align-items:center;gap:0.6rem;flex-shrink:0}
+.tc-btn{
+  width:32px;height:32px;border-radius:9px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--gb);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.18s;color:var(--dim);
+  font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;line-height:1;
+  user-select:none;
+}
+.tc-btn:hover:not(:disabled){
+  background:var(--adim);border-color:rgba(110,231,183,0.35);color:var(--accent);
+}
+.tc-btn:disabled{opacity:0.3;cursor:default}
+.tc-val{
+  font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;
+  color:var(--text);min-width:44px;text-align:center;
+  transition:color 0.2s;
+}
+.tc-val.warn{color:#fbbf24}
+.tc-val.danger{color:var(--wrong)}
+.tc-unit{font-size:0.72rem;color:var(--muted);font-weight:500;margin-top:1px}
+
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:10px}
 
 @media(max-width:600px){
   .mode-grid{grid-template-columns:1fr}
-  .qhdr{padding:0.65rem 1rem}
-  .qstats{gap:0.35rem}
-  .schip{font-size:0.7rem;padding:2px 8px}
+  .qhdr{padding:0.65rem 1rem;gap:0.6rem}
+  .qstats{gap:0.3rem}
+  .schip{font-size:0.7rem;padding:2px 7px}
   .qbody{padding:1.75rem 0.875rem 4.5rem}
   .rstats{grid-template-columns:1fr 1fr}
   .rstats .rstat:last-child{grid-column:span 2}
+  .exam-toggle{flex-wrap:wrap;border-radius:14px}
 }
 </style>
 </head>
 <body>
 
+<!-- ANIMATED BG -->
+<div class="bg-glow"></div>
+<div class="bg-canvas"><canvas id="bgCanvas"></canvas></div>
+
 <!-- HOME -->
 <section class="screen" id="home">
   <div class="home-inner">
     <div class="exam-toggle">
-      <button class="etog active" onclick="setExam('both',this)">🌐+🖥️ Всё</button>
-      <button class="etog" onclick="setExam('networks',this)">🌐 Сети (111)</button>
-      <button class="etog" onclick="setExam('html',this)">🖥️ HTML (107)</button>
+      <button class="etog active" onclick="setExam('both',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Всё
+      </button>
+      <button class="etog" onclick="setExam('networks',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20M2 12h20"/></svg>
+        Сети (111)
+      </button>
+      <button class="etog" onclick="setExam('html',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        HTML (107)
+      </button>
+    </div>
+
+    <div class="timer-control">
+      <div class="tc-left">
+        <div class="tc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="tc-label">Таймер на вопрос</div>
+          <div class="tc-desc">Настройте время до начала теста</div>
+        </div>
+      </div>
+      <div class="tc-right">
+        <button class="tc-btn" id="tcMinus" onclick="changeTimer(-5)">−</button>
+        <div style="text-align:center">
+          <div class="tc-val" id="tcVal">30</div>
+          <div class="tc-unit">сек</div>
+        </div>
+        <button class="tc-btn" id="tcPlus" onclick="changeTimer(5)">+</button>
+      </div>
     </div>
 
     <div class="mode-grid">
       <div class="mode-card mc-batch" onclick="selectMode('batch')">
-        <div class="mc-icon">📦</div>
+        <div class="mc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M2 10h20"/>
+          </svg>
+        </div>
         <div class="mc-name">По 20 вопросов</div>
         <div class="mc-desc">Вопросы разбиты на этапы по 20. После каждого — итог и переход к следующему. Без повторений.</div>
         <div class="mc-tags">
-          <span class="mc-tag">20 за раз</span>
-          <span class="mc-tag">Без повторов</span>
-          <span class="mc-tag">⏱ 30 сек</span>
+          <span class="mc-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            20 за раз
+          </span>
+          <span class="mc-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Без повторов
+          </span>
+          <span class="mc-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="timer-tag-val">30 сек</span>
+          </span>
         </div>
       </div>
       <div class="mode-card mc-all" onclick="selectMode('all')">
-        <div class="mc-icon">🚀</div>
+        <div class="mc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
         <div class="mc-name">Все сразу</div>
         <div class="mc-desc">Все вопросы в случайном порядке за один непрерывный проход. Марафон для уверенных.</div>
-        <div class="mc-tags" style="gap:0.4rem">
-          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">218 вопросов</span>
-          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">⏱ 30 сек</span>
+        <div class="mc-tags">
+          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            218 вопросов
+          </span>
+          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="timer-tag-val">30 сек</span>
+          </span>
         </div>
       </div>
     </div>
@@ -213,22 +503,34 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
   <div class="pbar-wrap"><div class="pbar-fill" id="pbar"></div></div>
   <div style="display:flex;flex-direction:column;min-height:100vh">
     <div class="qhdr">
+      <button class="qhdr-btn-home" onclick="askHome()" title="На главную">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
       <div class="qhdr-left">
         <div class="qhdr-name" id="qName">—</div>
         <div class="qhdr-batch" id="qBatch"></div>
       </div>
       <div class="qctr"><em id="qCur">1</em> / <span id="qTot">0</span></div>
       <div class="qstats">
-        <div class="schip c">✓ <span id="sC">0</span></div>
-        <div class="schip w">✗ <span id="sW">0</span></div>
+        <div class="schip c">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="sC">0</span>
+        </div>
+        <div class="schip w">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span id="sW">0</span>
+        </div>
       </div>
       <div class="timer-wrap">
         <div class="timer-ring">
           <svg viewBox="0 0 36 36" width="36" height="36">
-            <circle class="timer-bg" cx="18" cy="18" r="15"/>
-            <circle class="timer-arc" id="timerArc" cx="18" cy="18" r="15"/>
+            <circle class="tbg" cx="18" cy="18" r="15"/>
+            <circle class="tarc" id="timerArc" cx="18" cy="18" r="15"/>
           </svg>
-          <div class="timer-num" id="timerNum">30</div>
+          <div class="tnum" id="timerNum">30</div>
         </div>
       </div>
     </div>
@@ -238,12 +540,13 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
         <div class="qtext" id="qText"></div>
         <div class="alist" id="alist"></div>
         <div class="feedback" id="fb">
-          <span id="fbIcon"></span><span id="fbText"></span>
+          <svg id="fbIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></svg>
+          <span id="fbText"></span>
         </div>
         <div class="nxtwrap" id="nxtwrap">
           <button class="btnnxt" onclick="nextQ()">
             <span id="nxtTxt">Следующий</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
@@ -301,10 +604,29 @@ body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60
     </div>
     <div class="raction">
       <button class="bsec" onclick="goHome()">На главную</button>
-      <button class="bpri" onclick="restartSame()">↺ Повторить</button>
+      <button class="bpri" onclick="restartSame()">Повторить</button>
     </div>
   </div>
 </section>
+
+<!-- HOME CONFIRM MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="modal-title">Выйти из теста?</div>
+    <div class="modal-desc">Текущий прогресс будет сброшен. Вы вернётесь на главный экран выбора теста.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Остаться</button>
+      <button class="modal-confirm" onclick="confirmHome()">Выйти</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const DB = {
@@ -312,312 +634,353 @@ const DB = {
   html: [{"id":1,"question":"Как называется сетевая система, которая позволяет любому компьютеру обмениваться и передавать информацию по всему миру?","answers":[{"id":"A","text":"Интернет","correct":true},{"id":"B","text":"Сеть","correct":false},{"id":"C","text":"Сервер","correct":false},{"id":"D","text":"Протокол","correct":false},{"id":"E","text":"Мессенджер","correct":false}]},{"id":2,"question":"Как называется особый способ соединения компьютеров друг с другом в локальной сети?","answers":[{"id":"A","text":"Клиент-сервер","correct":true},{"id":"B","text":"Сервер","correct":false},{"id":"C","text":"Интернет-сеть","correct":false},{"id":"D","text":"Протокол","correct":false},{"id":"E","text":"Платеж","correct":false}]},{"id":3,"question":"протокол передачи файлов","answers":[{"id":"A","text":"ФТП","correct":true},{"id":"B","text":".PTP","correct":false},{"id":"C","text":"LDAP","correct":false},{"id":"D","text":"TCP/IP","correct":false},{"id":"E","text":"VPN","correct":false}]},{"id":4,"question":"Какие тексты можно читать на компьютере или другом электронном устройстве?","answers":[{"id":"A","text":"Гипертекст","correct":true},{"id":"B","text":"Гипермедиа","correct":false},{"id":"C","text":"Гиперссылка","correct":false},{"id":"D","text":"Тексты","correct":false},{"id":"E","text":"Файл","correct":false}]},{"id":5,"question":"Ученый, изобретший HTML","answers":[{"id":"A","text":"Тим Бернерс-Ли","correct":true},{"id":"B","text":"Андрис ван Дам","correct":false},{"id":"C","text":"Тед Нельсон","correct":false},{"id":"D","text":"Тим –Бриттани-Ли","correct":false},{"id":"E","text":"Марко ван Бастен","correct":false}]},{"id":6,"question":"Ниже перечислены нестандартные теги:","answers":[{"id":"A","text":"<hr>, <img>","correct":true},{"id":"B","text":"<html></html>,","correct":false},{"id":"C","text":"<hl></hl>","correct":false},{"id":"D","text":"<p></p>","correct":false},{"id":"E","text":"<https></https>","correct":false}]},{"id":7,"question":"Какой тег используется для создания заголовка строки заголовка?","answers":[{"id":"A","text":"<title></title>","correct":true},{"id":"B","text":"<body></body>","correct":false},{"id":"C","text":"<html></html>","correct":false},{"id":"D","text":"<big> </big>","correct":false},{"id":"E","text":"<name></name>","correct":false}]},{"id":8,"question":"Какой тег используется для выделения текста жирным шрифтом?","answers":[{"id":"A","text":"<B>","correct":true},{"id":"B","text":"<I>","correct":false},{"id":"C","text":"<U>","correct":false},{"id":"D","text":"<P>","correct":false},{"id":"E","text":"<S>","correct":false}]},{"id":9,"question":"Какой термин ввёл в обиход Тед Нельсон в 1963 году?","answers":[{"id":"A","text":"Гипертекст","correct":true},{"id":"B","text":"Дескриптор","correct":false},{"id":"C","text":"Ярлык","correct":false},{"id":"D","text":"HTML","correct":false},{"id":"E","text":"Сервер","correct":false}]},{"id":10,"question":"Основной текст располагается в теле документа между тегами ........... Замените многоточие соответствующим словом.","answers":[{"id":"A","text":"<head></head>","correct":true},{"id":"B","text":"<html></html>","correct":false},{"id":"C","text":"<title></title>","correct":false},{"id":"D","text":"<body></body>","correct":false},{"id":"E","text":"<air> </air>","correct":false}]},{"id":11,"question":"Какова функция тега <BR>?","answers":[{"id":"A","text":"Оставьте пустую строку","correct":true},{"id":"B","text":"Кнопка","correct":false},{"id":"C","text":"Выделить текст","correct":false},{"id":"D","text":"Создание рамки","correct":false},{"id":"E","text":"тимбилдинг","correct":false}]},{"id":12,"question":"Какой тег используется для установки размера шрифта, превышающего базовый размер шрифта?","answers":[{"id":"A","text":"<БОЛЬШОЙ>","correct":true},{"id":"B","text":"<BR>","correct":false},{"id":"C","text":"<Подпись>","correct":false},{"id":"D","text":"<HR>","correct":false},{"id":"E","text":"<FR>","correct":false}]},{"id":13,"question":"Укажите тег, используемый для разделения текста на абзацы.","answers":[{"id":"A","text":"<P></P>","correct":true},{"id":"B","text":"<H1>","correct":false},{"id":"C","text":"<BR>","correct":false},{"id":"D","text":"<U>","correct":false},{"id":"E","text":"<R>","correct":false}]},{"id":14,"question":"Что реализует список в <UL>?","answers":[{"id":"A","text":"Маркированный список","correct":true},{"id":"B","text":"Пронумерованный список","correct":false},{"id":"C","text":"Список определений","correct":false},{"id":"D","text":"Правильный ответ не показан.","correct":false},{"id":"E","text":"Запланированный список","correct":false}]},{"id":15,"question":"Web – Название тега, используемого для создания таблицы в документе.","answers":[{"id":"A","text":"<таблица>","correct":true},{"id":"B","text":"<Подпись>","correct":false},{"id":"C","text":"<РАМКА>","correct":false},{"id":"D","text":"<ШРИФТ>","correct":false},{"id":"E","text":"<правая>","correct":false}]},{"id":16,"question":"Отображение HTML-документов одновременно на странице браузера.","answers":[{"id":"A","text":"Рамки","correct":true},{"id":"B","text":"Формы","correct":false},{"id":"C","text":"веб-страница","correct":false},{"id":"D","text":"Списки","correct":false},{"id":"E","text":"Серверы","correct":false}]},{"id":17,"question":"Укажите атрибут, определяющий количество вертикальных кадров.","answers":[{"id":"A","text":"столбцы","correct":true},{"id":"B","text":"ряды","correct":false},{"id":"C","text":"цвет","correct":false},{"id":"D","text":"выровнять","correct":false},{"id":"E","text":"основной","correct":false}]},{"id":18,"question":"Какова функция атрибута Rows?","answers":[{"id":"A","text":"Возвращает количество горизонтальных кадров.","correct":true},{"id":"B","text":"Возвращает количество вертикальных кадров.","correct":false},{"id":"C","text":"Возвращает количество горизонтальных фигур","correct":false},{"id":"D","text":"Указывает количество вертикальных фигур","correct":false},{"id":"E","text":"Восстанавливает формы","correct":false}]},{"id":19,"question":"Как ещё можно назвать этот тег?","answers":[{"id":"A","text":"Дескриптор","correct":true},{"id":"B","text":"Код","correct":false},{"id":"C","text":"Веб-тег","correct":false},{"id":"D","text":"Дизайнер","correct":false},{"id":"E","text":"Верхний/нижний колонтитул","correct":false}]},{"id":20,"question":"Покажите синтаксис для записи поля пароля.","answers":[{"id":"A","text":"<input type=\"text\" name \"password\"/>","correct":true},{"id":"B","text":"<input type=\"text\" name \"firstname\"/>","correct":false},{"id":"C","text":"<input type=\"text\" name \"user\"/>","correct":false},{"id":"D","text":"<input type=\"text\" name \"lastname\"/>","correct":false},{"id":"E","text":"<input type=\"text\" name \"person\"/>","correct":false}]},{"id":21,"question":"Что такое TCP/IP?","answers":[{"id":"A","text":"Протокол, контролирующий прием/передачу информации.","correct":true},{"id":"B","text":"программа сортировки информации","correct":false},{"id":"C","text":"сеть хранения информации","correct":false},{"id":"D","text":"Интернет-адрес","correct":false},{"id":"E","text":"Антивирус","correct":false}]},{"id":22,"question":"Из скольких частей (чисел) состоит IP-адрес?","answers":[{"id":"A","text":"4 части (числа), разделённые точкой.","correct":true},{"id":"B","text":"5 чисел, разделённых дефисом.","correct":false},{"id":"C","text":"Из 10 чисел в последовательности","correct":false},{"id":"D","text":"2 цифры","correct":false},{"id":"E","text":"Из 4 сложенных цифр","correct":false}]},{"id":23,"question":"Что такое браузер?","answers":[{"id":"A","text":"Программа на компьютере","correct":true},{"id":"B","text":"Антивирус","correct":false},{"id":"C","text":"Уборщик","correct":false},{"id":"D","text":"Интернет","correct":false},{"id":"E","text":"БАРАН","correct":false}]},{"id":24,"question":"Основная функция браузерной программы:","answers":[{"id":"A","text":"Откройте веб-страницу по введенному адресу.","correct":true},{"id":"B","text":"Управление компьютером","correct":false},{"id":"C","text":"Изобретение новых идей","correct":false},{"id":"D","text":"Скрыть IP-адрес","correct":false},{"id":"E","text":"Написание веб-ссылок","correct":false}]},{"id":25,"question":"Какой код используется для отправки электронных писем пользователю в компьютерной сети?","answers":[{"id":"A","text":"Двоичный","correct":true},{"id":"B","text":"Шестнадцатеричная система счисления","correct":false},{"id":"C","text":"Графический подход","correct":false},{"id":"D","text":"Цифровой","correct":false},{"id":"E","text":"Символический","correct":false}]},{"id":26,"question":"Символ, разделяющий две части адреса электронной почты.","answers":[{"id":"A","text":"@","correct":true},{"id":"B","text":"!","correct":false},{"id":"C","text":"*","correct":false},{"id":"D","text":"Нет.","correct":false},{"id":"E","text":":","correct":false}]},{"id":27,"question":"Из чего состоит адрес почтового сервера?","answers":[{"id":"A","text":"Из доменов","correct":true},{"id":"B","text":"Из чисел","correct":false},{"id":"C","text":"Из символов","correct":false},{"id":"D","text":"Из писем","correct":false},{"id":"E","text":"Из ничего","correct":false}]},{"id":28,"question":"Какой символ разделяет части адреса почтового сервера?","answers":[{"id":"A","text":":","correct":true},{"id":"B","text":"*","correct":false},{"id":"C","text":"!","correct":false},{"id":"D","text":"@","correct":false},{"id":"E","text":"Нет.","correct":false}]},{"id":29,"question":"Что такое FTP?","answers":[{"id":"A","text":"протокол передачи файлов","correct":true},{"id":"B","text":"программа защиты файлов","correct":false},{"id":"C","text":"Как создать программу","correct":false},{"id":"D","text":"Программа вывода гипертекста","correct":false},{"id":"E","text":"Программа для чтения гипертекста","correct":false}]},{"id":30,"question":"Популярные российские поисковые системы:","answers":[{"id":"A","text":"Рамблер, Яндекс, Апорт","correct":true},{"id":"B","text":"Google, Firefox","correct":false},{"id":"C","text":"Microsoft Edge, Google, Яндекс","correct":false},{"id":"D","text":"Бинг, Яху!","correct":false},{"id":"E","text":"Яндекс, Google, Нигма","correct":false}]},{"id":31,"question":"Что такое веб-страница?","answers":[{"id":"A","text":"Электронный документ в системе WWW","correct":true},{"id":"B","text":"Веб-сайт написан на языке HTTPS.","correct":false},{"id":"C","text":"Документ, расположенный в гипертекстовой системе.","correct":false},{"id":"D","text":"Документ написан в формате HTML.","correct":false},{"id":"E","text":"Документ хранится на жестком диске.","correct":false}]},{"id":32,"question":"Интернет — это...","answers":[{"id":"A","text":"крупномасштабная всемирная сеть","correct":true},{"id":"B","text":"локальная сеть","correct":false},{"id":"C","text":"региональная информационно-компьютерная сеть","correct":false},{"id":"D","text":"локальная информационная сеть","correct":false},{"id":"E","text":"корпоративная сеть","correct":false}]},{"id":33,"question":"В каком году появился интернет?","answers":[{"id":"A","text":"1983","correct":true},{"id":"B","text":"1993","correct":false},{"id":"C","text":"1985","correct":false},{"id":"D","text":"1982","correct":false},{"id":"E","text":"1987","correct":false}]},{"id":34,"question":"Основные ячейки интернет-сети:","answers":[{"id":"A","text":"локальная сеть","correct":true},{"id":"B","text":"хост-компьютеры","correct":false},{"id":"C","text":"Волоконно-оптические кабели с очень высокой проводимостью","correct":false},{"id":"D","text":"телефонные линии","correct":false},{"id":"E","text":"телефонные линии","correct":false}]},{"id":35,"question":"Стандартный интерфейс CGI выглядит следующим образом:","answers":[{"id":"A","text":"Реализует серверные приложения, вызываемые по URL-адресу.","correct":true},{"id":"B","text":"Волоконно-оптические кабели с очень высокой проводимостью","correct":false},{"id":"C","text":"состоит из типов компьютеров, каналов связи и механических механизмов.","correct":false},{"id":"D","text":"Состоит из типов компьютеров, их устройств и панелей управления.","correct":false},{"id":"E","text":"Состоит из различных типов компьютеров, сетевых информационных компонентов и электрооборудования.","correct":false}]},{"id":36,"question":"Протоколы, не являющиеся сетевыми протоколами:","answers":[{"id":"A","text":"HTML","correct":true},{"id":"B","text":"TCP/IP","correct":false},{"id":"C","text":"СОСКАЛЬЗЫВАТЬ","correct":false},{"id":"D","text":"ФТП","correct":false},{"id":"E","text":"ППП","correct":false}]},{"id":37,"question":"Сколько слоев имеет модель OSI?","answers":[{"id":"A","text":"Уровень 7","correct":true},{"id":"B","text":"Уровень 8","correct":false},{"id":"C","text":"Уровень 9","correct":false},{"id":"D","text":"Уровень 6","correct":false},{"id":"E","text":"Уровень 5","correct":false}]},{"id":38,"question":"Пятый слой модели OSI называется...","answers":[{"id":"A","text":"сессионный","correct":true},{"id":"B","text":"применяемый","correct":false},{"id":"C","text":"транспорт","correct":false},{"id":"D","text":"онлайн","correct":false},{"id":"E","text":"канал","correct":false}]},{"id":39,"question":"Первый слой модели OSI называется...","answers":[{"id":"A","text":"физический","correct":true},{"id":"B","text":"сессионный","correct":false},{"id":"C","text":"канал","correct":false},{"id":"D","text":"транспорт","correct":false},{"id":"E","text":"онлайн","correct":false}]},{"id":40,"question":"Общий объем информации, передаваемой через один сетевой компьютер в интернете, называется...","answers":[{"id":"A","text":"трафик","correct":true},{"id":"B","text":"расписание","correct":false},{"id":"C","text":"транзит","correct":false},{"id":"D","text":"фонд","correct":false},{"id":"E","text":"количество","correct":false}]},{"id":41,"question":"Мы называем это налаживанием связей...","answers":[{"id":"A","text":"Три слоя модели OSI","correct":true},{"id":"B","text":"Слой 2 модели OSI","correct":false},{"id":"C","text":"4 слоя модели OSI","correct":false},{"id":"D","text":"6 слоев модели OSI","correct":false},{"id":"E","text":"5 слоев модели OSI","correct":false}]},{"id":42,"question":"Мы говорим о практичности...","answers":[{"id":"A","text":"7 слоев модели OSI","correct":true},{"id":"B","text":"4 слоя модели OSI","correct":false},{"id":"C","text":"6 слоев модели OSI","correct":false},{"id":"D","text":"5 слоев модели OSI","correct":false},{"id":"E","text":"Слой 0 модели OSI","correct":false}]},{"id":43,"question":"Интернет-провайдер","answers":[{"id":"A","text":"поставщик","correct":true},{"id":"B","text":"поставщик","correct":false},{"id":"C","text":"исполнитель","correct":false},{"id":"D","text":"дилер","correct":false},{"id":"E","text":"продавец","correct":false}]},{"id":44,"question":"Коммутатор компьютера в сети называется...","answers":[{"id":"A","text":"Центр","correct":true},{"id":"B","text":"Хаб","correct":false},{"id":"C","text":"Хозяин","correct":false},{"id":"D","text":"ICQ","correct":false},{"id":"E","text":"ВАН","correct":false}]},{"id":45,"question":"Единица измерения скорости передачи данных через модем:","answers":[{"id":"A","text":"тело","correct":true},{"id":"B","text":"вши","correct":false},{"id":"C","text":"фасоль","correct":false},{"id":"D","text":"баннер","correct":false},{"id":"E","text":"Бонар","correct":false}]},{"id":46,"question":"Устройство для подключения компьютеров к сети через телефонный канал называется...","answers":[{"id":"A","text":"модем","correct":true},{"id":"B","text":"сканер","correct":false},{"id":"C","text":"порт","correct":false},{"id":"D","text":"слот","correct":false},{"id":"E","text":"сервер","correct":false}]},{"id":47,"question":"Язык разметки гипертекста называется...","answers":[{"id":"A","text":"HTML","correct":true},{"id":"B","text":"JavaScript","correct":false},{"id":"C","text":"Турбо Паскаль","correct":false},{"id":"D","text":"Дельфы","correct":false},{"id":"E","text":"C++","correct":false}]},{"id":48,"question":"Что такое веб-страница (HTML-документ)?","answers":[{"id":"A","text":"текстовый файл типа htm или htm","correct":true},{"id":"B","text":"графический файл типа gif или jpg","correct":false},{"id":"C","text":"текстовый файл типа txt или doc","correct":false},{"id":"D","text":"Двоичный файл типа Com или exe","correct":false},{"id":"E","text":"текстовый файл типа g или txt","correct":false}]},{"id":49,"question":"Укажите протокол, реализующий адресацию пакетов в сети...","answers":[{"id":"A","text":"IP","correct":true},{"id":"B","text":"TCP","correct":false},{"id":"C","text":"DNS","correct":false},{"id":"D","text":"URL","correct":false},{"id":"E","text":"НКП/ ИП","correct":false}]},{"id":50,"question":"Какова функция протокола TCP?","answers":[{"id":"A","text":"выполняет задачу отправки данных.","correct":true},{"id":"B","text":"объединяет информацию в единую систему","correct":false},{"id":"C","text":"разделяет данные на несколько частей","correct":false},{"id":"D","text":"собирает данные","correct":false},{"id":"E","text":"обрабатывает и организует данные","correct":false}]},{"id":51,"question":"Информационная составляющая сети…","answers":[{"id":"A","text":"состоит из типов компьютеров, их устройств и электрических механизмов.","correct":true},{"id":"B","text":"Состоит из типов компьютеров, их устройств, каналов связи и механизмов связи.","correct":false},{"id":"C","text":"состоит из типов компьютеров, каналов связи и механических механизмов.","correct":false},{"id":"D","text":"Состоит из типов компьютеров, их устройств и панелей управления.","correct":false},{"id":"E","text":"Состоит из различных типов компьютеров, сетевых информационных компонентов и электрооборудования.","correct":false}]},{"id":52,"question":"Какой из телефонных каналов удобнее для связи с поставщиком услуг?","answers":[{"id":"A","text":"цифровой телефонный канал","correct":true},{"id":"B","text":"Телефонный канал с дополнительным устройством AVU","correct":false},{"id":"C","text":"аналоговый телефонный канал","correct":false},{"id":"D","text":"телефонный канал с блокировщиком","correct":false},{"id":"E","text":"радиотелефонный канал","correct":false}]},{"id":53,"question":"С какого символа начинаются и заканчиваются все теги?","answers":[{"id":"A","text":"Все теги начинаются с символа «меньше» (<) и заканчиваются символом «больше» (>).","correct":true},{"id":"B","text":"Все теги начинаются с символа «открывающей кавычки» (\") и заканчиваются символом «закрывающей кавычки» (\").","correct":false},{"id":"C","text":"Все теги начинаются со знака плюс (+) и заканчиваются знаком минус (-).","correct":false},{"id":"D","text":"все тег \"звезда\" (*) символ начинается, и \"точно по делу\" с символом (.) конец","correct":false},{"id":"E","text":"Все теги начинаются с восклицательного знака (!) и заканчиваются вопросительным знаком (?).","correct":false}]},{"id":54,"question":"Какой атрибут достаточно использовать для тега <FONT>, чтобы изменить цвет шрифта?","answers":[{"id":"A","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"X\" в теге <FONT>.","correct":true},{"id":"B","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"V\" в теге <TXT>.","correct":false},{"id":"C","text":"Чтобы изменить цвет шрифта, просто добавьте атрибут COLOR-=\"C\" к тегу <BAS>.","correct":false},{"id":"D","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"E\" в теге <DOC>.","correct":false},{"id":"E","text":"Чтобы изменить цвет шрифта, просто добавьте атрибут COLOR-=\"F\" к тегу <COM>.","correct":false}]},{"id":55,"question":"Элемент, образующий строку таблицы:","answers":[{"id":"A","text":"ТР","correct":true},{"id":"B","text":"HR","correct":false},{"id":"C","text":"ТД","correct":false},{"id":"D","text":"БР","correct":false},{"id":"E","text":"ТХ","correct":false}]},{"id":56,"question":"Элемент ячейки, представляющий собой имя столбца или строки в таблице:","answers":[{"id":"A","text":"ТХ","correct":true},{"id":"B","text":"ТД","correct":false},{"id":"C","text":"ТР","correct":false},{"id":"D","text":"HR","correct":false},{"id":"E","text":"БР","correct":false}]},{"id":57,"question":"Какой тег используется для представления обычных ячеек:","answers":[{"id":"A","text":"ТД","correct":true},{"id":"B","text":"ТХ","correct":false},{"id":"C","text":"HR","correct":false},{"id":"D","text":"БР","correct":false},{"id":"E","text":"ТР","correct":false}]},{"id":58,"question":"Какой атрибут следует использовать для объединения ячеек столбца:","answers":[{"id":"A","text":"колспан","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"строка span","correct":false},{"id":"D","text":"клеточная закладка","correct":false},{"id":"E","text":"правила","correct":false}]},{"id":59,"question":"Какой атрибут следует использовать для объединения ячеек строки:","answers":[{"id":"A","text":"строка span","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"колспан","correct":false},{"id":"D","text":"правила","correct":false},{"id":"E","text":"клеточная закладка","correct":false}]},{"id":60,"question":"Какой атрибут используется для указания количества пустого пространства в ячейках, окружающих данные?","answers":[{"id":"A","text":"клеточная закладка","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"фон","correct":false},{"id":"D","text":"колспан","correct":false},{"id":"E","text":"выше","correct":false}]},{"id":61,"question":"Какой атрибут типа double используется для изменения цвета заданного текста?","answers":[{"id":"A","text":"ЦВЕТ ШРИФТА","correct":true},{"id":"B","text":"BGCOLOR","correct":false},{"id":"C","text":"ЦВЕТ ТЕКСТА","correct":false},{"id":"D","text":"ШРИФТ","correct":false},{"id":"E","text":"РАЗМЕР ШРИФТА","correct":false}]},{"id":62,"question":"Какие значения принимает атрибут ALIGN?","answers":[{"id":"A","text":"левый, центр, правый, обосновать","correct":true},{"id":"B","text":"ширина, высота, свет, выравнивание","correct":false},{"id":"C","text":"свет, центр, справа, обосновать","correct":false},{"id":"D","text":"верх, середина, выравнивание, низ","correct":false},{"id":"E","text":"левый, средний, обосновать, правый","correct":false}]},{"id":63,"question":"Какой атрибут используется для вставки изображения в документ?","answers":[{"id":"A","text":"IMG","correct":true},{"id":"B","text":"КАК ДЕЛА","correct":false},{"id":"C","text":"ВСТРОЕННЫЙ","correct":false},{"id":"D","text":"ФОН","correct":false},{"id":"E","text":"ПОД","correct":false}]},{"id":64,"question":"Какой атрибут определяет структуру фреймов?","answers":[{"id":"A","text":"НАБОР РАМОК","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"РАМКА","correct":false},{"id":"D","text":"NOFRAMES","correct":false},{"id":"E","text":"ВСТРОЕННЫЙ","correct":false}]},{"id":65,"question":"Какой атрибут используется для установки информации во фреймах:","answers":[{"id":"A","text":"РАМКА","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"НАБОР РАМОК","correct":false},{"id":"D","text":"ВСТРОЕННЫЙ","correct":false},{"id":"E","text":"NOFRAMES","correct":false}]},{"id":66,"question":"Какой атрибут мы используем для работы с музыкальными файлами:","answers":[{"id":"A","text":"ВСТРОЕННЫЙ","correct":true},{"id":"B","text":"IMG","correct":false},{"id":"C","text":"СКР","correct":false},{"id":"D","text":"КАК ДЕЛА","correct":false},{"id":"E","text":"ПОД","correct":false}]},{"id":67,"question":"Атрибут, указывающий на файл, который необходимо загрузить:","answers":[{"id":"A","text":"СКР","correct":true},{"id":"B","text":"КАК ДЕЛА","correct":false},{"id":"C","text":"IMG","correct":false},{"id":"D","text":"ПОД","correct":false},{"id":"E","text":"ВСТРОЕННЫЙ","correct":false}]},{"id":68,"question":"Элемент, из которого состоит направляющая:","answers":[{"id":"A","text":"МАРКЕТ","correct":true},{"id":"B","text":"ВСТРОЕННЫЙ","correct":false},{"id":"C","text":"ВЫСОТА МАРГИНХАЙТ","correct":false},{"id":"D","text":"НАБОР РАМОК","correct":false},{"id":"E","text":"IMG","correct":false}]},{"id":69,"question":"Атрибут, указывающий, сколько раз ползунок проходит по экрану:","answers":[{"id":"A","text":"Петля","correct":true},{"id":"B","text":"Поведение","correct":false},{"id":"C","text":"Scrollamount","correct":false},{"id":"D","text":"Направление","correct":false},{"id":"E","text":"Scrolldelay","correct":false}]},{"id":70,"question":"Какой атрибут используется для обозначения скорости движения:","answers":[{"id":"A","text":"Scrollamount","correct":true},{"id":"B","text":"Направление","correct":false},{"id":"C","text":"Scrolldelay","correct":false},{"id":"D","text":"Петля","correct":false},{"id":"E","text":"Поведение","correct":false}]},{"id":71,"question":"Атрибут, управляющий полосой прокрутки в пределах определенной области:","answers":[{"id":"A","text":"Прокрутка","correct":true},{"id":"B","text":"Scrollamount","correct":false},{"id":"C","text":"Поведение","correct":false},{"id":"D","text":"Направление","correct":false},{"id":"E","text":"Scrolldelay","correct":false}]},{"id":72,"question":"Параметры атрибута SCROLING:","answers":[{"id":"A","text":"да, нет, авто","correct":true},{"id":"B","text":"слева, в центре, справа","correct":false},{"id":"C","text":"левый, средний, правый","correct":false},{"id":"D","text":"верх, центр, низ","correct":false},{"id":"E","text":"выравнивание, верх, низ","correct":false}]},{"id":73,"question":"Устройство, организующее диалог с пользователем на веб-странице:","answers":[{"id":"A","text":"форма","correct":true},{"id":"B","text":"рамка","correct":false},{"id":"C","text":"скользящая направляющая","correct":false},{"id":"D","text":"стол","correct":false},{"id":"E","text":"связь","correct":false}]},{"id":74,"question":"С какого двойного тега начинается шаблон?","answers":[{"id":"A","text":"Форма и /Форма","correct":true},{"id":"B","text":"Frame и /Frame","correct":false},{"id":"C","text":"iframe и /Iframe","correct":false},{"id":"D","text":"Frameset и /Framese","correct":false},{"id":"E","text":"Таблица и /Таблица","correct":false}]},{"id":75,"question":"Какой атрибут используется для указания шрифта?","answers":[{"id":"A","text":"ШРИФТ","correct":true},{"id":"B","text":"ЦВЕТ ТЕКСТА","correct":false},{"id":"C","text":"ЦВЕТ ШРИФТА","correct":false},{"id":"D","text":"РАЗМЕР ШРИФТА","correct":false},{"id":"E","text":"BGCOLOR","correct":false}]},{"id":76,"question":"Команда для создания элемента управления выглядит следующим образом:","answers":[{"id":"A","text":"ВХОД","correct":true},{"id":"B","text":"ЦЕНИТЬ","correct":false},{"id":"C","text":"ТИП","correct":false},{"id":"D","text":"КНОПКА","correct":false},{"id":"E","text":"ИМЯ","correct":false}]},{"id":77,"question":"Параметр, определяющий элемент управления:","answers":[{"id":"A","text":"ТИП","correct":true},{"id":"B","text":"ВХОД","correct":false},{"id":"C","text":"ЦЕНИТЬ","correct":false},{"id":"D","text":"КНОПКА","correct":false},{"id":"E","text":"ИМЯ","correct":false}]},{"id":78,"question":"Параметр, определяющий текст, отображаемый в элементе управления:","answers":[{"id":"A","text":"ЦЕНИТЬ","correct":true},{"id":"B","text":"ИМЯ","correct":false},{"id":"C","text":"ТИП","correct":false},{"id":"D","text":"ВХОД","correct":false},{"id":"E","text":"КНОПКА","correct":false}]},{"id":79,"question":"Окно для ввода текста в одну строку:","answers":[{"id":"A","text":"TYPE=text","correct":true},{"id":"B","text":"TYPE=radio","correct":false},{"id":"C","text":"TYPE=checkbox","correct":false},{"id":"D","text":"TYPE=hidden","correct":false},{"id":"E","text":"TYPE=password","correct":false}]},{"id":80,"question":"Окно для ввода ключа:","answers":[{"id":"A","text":"TYPE=password","correct":true},{"id":"B","text":"TYPE=checkbox","correct":false},{"id":"C","text":"TYPE=text","correct":false},{"id":"D","text":"TYPE=radio","correct":false},{"id":"E","text":"TYPE=hidden","correct":false}]},{"id":81,"question":"Текстовое окно:","answers":[{"id":"A","text":"Текстовое поле","correct":true},{"id":"B","text":"Вариант","correct":false},{"id":"C","text":"Ценить","correct":false},{"id":"D","text":"Скрытый","correct":false},{"id":"E","text":"Выбирать","correct":false}]},{"id":82,"question":"Переключатель:","answers":[{"id":"A","text":"TYPE=radio","correct":true},{"id":"B","text":"TYPE=checkbox","correct":false},{"id":"C","text":"TYPE=hidden","correct":false},{"id":"D","text":"TYPE=reset","correct":false},{"id":"E","text":"TYPE=text","correct":false}]},{"id":83,"question":"Отмеченный прямоугольник:","answers":[{"id":"A","text":"TYPE=checkbox","correct":true},{"id":"B","text":"TYPE=password","correct":false},{"id":"C","text":"TYPE=text","correct":false},{"id":"D","text":"TYPE=hidden","correct":false},{"id":"E","text":"TYPE=radio","correct":false}]},{"id":84,"question":"Удалить кнопку:","answers":[{"id":"A","text":"TYPE=reset","correct":true},{"id":"B","text":"TYPE=radio","correct":false},{"id":"C","text":"TYPE=password","correct":false},{"id":"D","text":"TYPE=text","correct":false},{"id":"E","text":"TYPE=hidden","correct":false}]},{"id":85,"question":"Для создания кнопки используется следующий элемент:","answers":[{"id":"A","text":"КНОПКА","correct":true},{"id":"B","text":"ВАРИАНТ","correct":false},{"id":"C","text":"ВЫБИРАТЬ","correct":false},{"id":"D","text":"ВХОД","correct":false},{"id":"E","text":"Текстовая область","correct":false}]},{"id":86,"question":"Атрибут, определяющий размер и состав кадров на экране:","answers":[{"id":"A","text":"НАБОР РАМОК","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"РАМКА","correct":false},{"id":"D","text":"ФОРМА","correct":false},{"id":"E","text":"NOFRAMES","correct":false}]},{"id":87,"question":"Атрибут, определяющий HTML-файл для каждого фрейма, выглядит следующим образом:","answers":[{"id":"A","text":"РАМКА","correct":true},{"id":"B","text":"НАБОР РАМОК","correct":false},{"id":"C","text":"IFRAME","correct":false},{"id":"D","text":"NOFRAMES","correct":false},{"id":"E","text":"ФОРМА","correct":false}]},{"id":88,"question":"Атрибут, не позволяющий перемещать границы фреймов с помощью мыши:","answers":[{"id":"A","text":"Изменение размера недоступно","correct":true},{"id":"B","text":"Ширина поля","correct":false},{"id":"C","text":"Без рамок","correct":false},{"id":"D","text":"Высота поля","correct":false},{"id":"E","text":"Прокрутка","correct":false}]},{"id":89,"question":"Что такое знак?","answers":[{"id":"A","text":"Указывает точку в этом документе, к которой следует перейти по ссылке.","correct":true},{"id":"B","text":"Указывает на наличие одной запятой в данном документе, которая чередуется с другой буквой.","correct":false},{"id":"C","text":"Указывает место в этом документе, которое перемещается по номеру.","correct":false},{"id":"D","text":"Указывает один цвет в этом документе, который будет чередоваться с другими цветами.","correct":false},{"id":"E","text":"Этот документ, представляющий собой последовательность изображений, раскрывает скрытую в них красоту.","correct":false}]},{"id":90,"question":"Объяснение форматов <Р ALIGN=« left» x/ P>, используемых в форматировании HTML-страниц...","answers":[{"id":"A","text":"выравнивание автомагистралей","correct":true},{"id":"B","text":"сглаживание прямых дорог","correct":false},{"id":"C","text":"сглаживание гладких дорог","correct":false},{"id":"D","text":"выравнивание обработанных дорог","correct":false},{"id":"E","text":"сглаживание изогнутых дорог","correct":false}]},{"id":91,"question":"Объяснение формата <FONT FACE=*></FONT>, используемого в HTML...","answers":[{"id":"A","text":"список шрифтов","correct":true},{"id":"B","text":"список каталога","correct":false},{"id":"C","text":"список бумаг","correct":false},{"id":"D","text":"список дисков","correct":false},{"id":"E","text":"список файлов","correct":false}]},{"id":92,"question":"Объяснение формата <А HREF=\"URL\"> TEKCT</А> для вставки гиперссылок, используемых в HTML...","answers":[{"id":"A","text":"ссылка на другую страницу","correct":true},{"id":"B","text":"ссылка на другой диск","correct":false},{"id":"C","text":"ссылка на другой файл","correct":false},{"id":"D","text":"ссылка на эту страницу","correct":false},{"id":"E","text":"ссылка на другой каталог","correct":false}]},{"id":93,"question":"В HTML используется понятие URL — унифицированный указатель ресурса...","answers":[{"id":"A","text":"универсальный указатель ресурса (веб-адрес)","correct":true},{"id":"B","text":"универсальный графический указатель (адрес документа в каталоге)","correct":false},{"id":"C","text":"универсальный указатель темы (адрес документа в файловой сети)","correct":false},{"id":"D","text":"Универсальный указатель документа (адрес документа в сети в программе)","correct":false},{"id":"E","text":"Универсальный музыкальный локатор (адрес документа в интернете для музыкальных произведений)","correct":false}]},{"id":94,"question":"<HR>","answers":[{"id":"A","text":"Этот символ обозначает горизонтальную линию.","correct":true},{"id":"B","text":"Начало и конец окна браузера в HTML-разметке","correct":false},{"id":"C","text":"Этот атрибут определяет толщину линии.","correct":false},{"id":"D","text":"Этот символ используется для перехода на новую строку без разрыва абзаца.","correct":false},{"id":"E","text":"Теперь это будет определяться шириной экрана.","correct":false}]},{"id":95,"question":"Протоколы сетевого уровня...","answers":[{"id":"A","text":"Она создается в виде программного модуля и выполняется в сети, называемой хостом, и на компьютере, называемом шлюзом, расположенном посередине.","correct":true},{"id":"B","text":"протокол управления сообщениями","correct":false},{"id":"C","text":"Протокол передачи дейтаграмм. Этот протокол предоставляет услуги маршрутизации.","correct":false},{"id":"D","text":"дополнительный протокол, решающий проблему маршрутизации на коротких путях","correct":false},{"id":"E","text":"Определяет адреса машин, используя обратный протокол ARP.","correct":false}]},{"id":96,"question":"RARP – Протокол обратного разрешения адресов – Протокол маршрутизации...","answers":[{"id":"A","text":"Определяет адреса машин, используя обратный протокол ARP.","correct":true},{"id":"B","text":"Она создается в виде программного модуля и выполняется в сети, называемой хостом, и на компьютере, называемом шлюзом, расположенном посередине.","correct":false},{"id":"C","text":"протокол управления сообщениями","correct":false},{"id":"D","text":"Протокол передачи дейтаграмм. Этот протокол предоставляет услуги маршрутизации.","correct":false},{"id":"E","text":"дополнительный протокол, решающий проблему маршрутизации на коротких путях","correct":false}]},{"id":97,"question":"NIS – Network Information Service – дополнительный протокол обслуживания...","answers":[{"id":"A","text":"хранит информацию о клиентах в интернете.","correct":true},{"id":"B","text":"отправляет информацию о маршрутизации во внутренние сети","correct":false},{"id":"C","text":"Позволяет получать доступ к файлам на удаленном компьютере так, как если бы они находились на локальном компьютере.","correct":false},{"id":"D","text":"передает информацию о маршрутизации между шлюзами.","correct":false},{"id":"E","text":"отправляет информацию о маршрутизации во внешние сети","correct":false}]},{"id":98,"question":"HTML (язык гипертекстовой разметки) — это...","answers":[{"id":"A","text":"конструктор веб-страниц","correct":true},{"id":"B","text":"язык программирования","correct":false},{"id":"C","text":"просмотрщик веб-страниц","correct":false},{"id":"D","text":"Интернет-сервер","correct":false},{"id":"E","text":"Инструмент для создания веб-страниц","correct":false}]},{"id":99,"question":"Гипертекст — это...","answers":[{"id":"A","text":"Текст, сочетающий в себе оформление, графику, видео- или аудиоинформацию.","correct":true},{"id":"B","text":"очень большой текст","correct":false},{"id":"C","text":"текст, набранный на компьютере","correct":false},{"id":"D","text":"текст, набранный крупным шрифтом","correct":false},{"id":"E","text":"страница с текстом и изображениями","correct":false}]},{"id":100,"question":"Что такое фамилия?","answers":[{"id":"A","text":"Команды разметки исходного текста HTML","correct":true},{"id":"B","text":"Операторы, используемые в HTML","correct":false},{"id":"C","text":"HTML-команды, которые создают ссылки на исходный текст.","correct":false},{"id":"D","text":"Строки, используемые в HTML","correct":false},{"id":"E","text":"Команды, которые создают ссылки на конец текста в HTML.","correct":false}]},{"id":101,"question":"Какие символы открывают и закрывают фамилию?","answers":[{"id":"A","text":"<;>","correct":true},{"id":"B","text":"(;)","correct":false},{"id":"C","text":"/;/","correct":false},{"id":"D","text":"{;}","correct":false},{"id":"E","text":"[;]","correct":false}]},{"id":102,"question":"Для чего используется тег <HEAD> ..... </HEAD>?","answers":[{"id":"A","text":"тематическая часть документа, то есть содержащая информацию о документе в целом.","correct":true},{"id":"B","text":"создать документ","correct":false},{"id":"C","text":"создать титульную страницу документа","correct":false},{"id":"D","text":"изменить название общего документа","correct":false},{"id":"E","text":"назвать документ","correct":false}]},{"id":103,"question":"Для чего используется тег <TITLE>.....</TITLE>?","answers":[{"id":"A","text":"дать документу его официальное название","correct":true},{"id":"B","text":"написать заголовок общего документа","correct":false},{"id":"C","text":"создать основной текст документа для последующего написания.","correct":false},{"id":"D","text":"создать документ","correct":false},{"id":"E","text":"создать титульную страницу документа","correct":false}]},{"id":104,"question":"Для чего используется кожа?","answers":[{"id":"A","text":"создать текст документа, который будет отображаться на экране.","correct":true},{"id":"B","text":"назвать документ","correct":false},{"id":"C","text":"написать заголовок общего документа","correct":false},{"id":"D","text":"увидеть текст, который нужно написать","correct":false},{"id":"E","text":"выдать документ","correct":false}]},{"id":105,"question":"Какие теги используются для создания подзаголовков в HTML-документах?","answers":[{"id":"A","text":"Начинается с тегов <H1> и </H1> и продолжается до тегов <H6> и </H6>.","correct":true},{"id":"B","text":"Начинается всё с тегов <H1> и </H1>.","correct":false},{"id":"C","text":"Он создается, начиная с тегов <Н6> и </Н6>.","correct":false},{"id":"D","text":"Сколько бы тегов вы ни использовали, вы всё равно это поймёте.","correct":false},{"id":"E","text":"Начинается с тегов <H1> и </H1> и продолжается до тегов <H2> и </H2>.","correct":false}]},{"id":106,"question":"Какие функциональные части содержатся в HTML-документах?","answers":[{"id":"A","text":"заголовки и абзацы","correct":true},{"id":"B","text":"тексты","correct":false},{"id":"C","text":"темы","correct":false},{"id":"D","text":"абзацы","correct":false},{"id":"E","text":"тексты и темы","correct":false}]},{"id":107,"question":"Для чего используются теги <CAPTION> и </CAPTION>?","answers":[{"id":"A","text":"дать таблице название","correct":true},{"id":"B","text":"написать заголовок общего документа","correct":false},{"id":"C","text":"дать документу его официальное название","correct":false},{"id":"D","text":"создать текст документа, который будет отображаться на экране.","correct":false},{"id":"E","text":"создать титульную страницу документа","correct":false}]}]
 };
 
-const BATCH = 20;
-const TIMER_SEC = 30;
-const CIRC = 94.25; // 2*pi*15
+const BATCH=20, CIRC=94.25;
+let TIMER_SEC=30;
+let cfg={mode:'batch',exam:'both'};
+let st={};
+let timerInterval=null,timerLeft=0;
 
-let cfg = { mode:'batch', exam:'both' };
-let st = {};
-let timerInterval = null;
-let timerLeft = 0;
+const TC_MIN=5, TC_MAX=60, TC_STEP=5;
 
-function setExam(val, btn) {
-  cfg.exam = val;
-  document.querySelectorAll('.etog').forEach(b => b.classList.remove('active'));
+function changeTimer(delta){
+  const next=Math.min(TC_MAX,Math.max(TC_MIN,TIMER_SEC+delta));
+  if(next===TIMER_SEC)return;
+  TIMER_SEC=next;
+  const el=document.getElementById('tcVal');
+  el.textContent=TIMER_SEC;
+  el.className='tc-val'+(TIMER_SEC<=10?' danger':TIMER_SEC<=20?' warn':'');
+  document.getElementById('tcMinus').disabled=TIMER_SEC<=TC_MIN;
+  document.getElementById('tcPlus').disabled=TIMER_SEC>=TC_MAX;
+  // Update tag labels in mode cards
+  document.querySelectorAll('.timer-tag-val').forEach(t=>t.textContent=TIMER_SEC+' сек');
+}
+
+/* ── ANIMATED BACKGROUND (particle dots) ── */
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  const N=55;
+
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  for(let i=0;i<N;i++){
+    particles.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      r:Math.random()*1.4+0.3,
+      vx:(Math.random()-0.5)*0.18,
+      vy:(Math.random()-0.5)*0.18,
+      a:Math.random()*0.35+0.08,
+      hue:Math.random()<0.6?162:239
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // Draw connections
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x;
+        const dy=particles[i].y-particles[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<140){
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          const alpha=(1-dist/140)*0.07;
+          ctx.strokeStyle=`rgba(110,231,183,${alpha})`;
+          ctx.lineWidth=0.6;
+          ctx.stroke();
+        }
+      }
+    }
+    // Draw dots
+    particles.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      const col=p.hue===162?`rgba(110,231,183,${p.a})`:`rgba(129,140,248,${p.a})`;
+      ctx.fillStyle=col;
+      ctx.fill();
+    });
+  }
+
+  function update(){
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-10) p.x=W+10;
+      if(p.x>W+10) p.x=-10;
+      if(p.y<-10) p.y=H+10;
+      if(p.y>H+10) p.y=-10;
+    });
+  }
+
+  function loop(){
+    update(); draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ── UI ── */
+function setExam(val,btn){
+  cfg.exam=val;
+  document.querySelectorAll('.etog').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 
-function selectMode(mode) {
-  cfg.mode = mode;
+function selectMode(mode){
+  cfg.mode=mode;
   startQuiz();
 }
 
-function buildPool() {
-  let pool = cfg.exam === 'both'
-    ? [...DB.networks, ...DB.html]
-    : [...DB[cfg.exam]];
+function buildPool(){
+  let pool=cfg.exam==='both'?[...DB.networks,...DB.html]:[...DB[cfg.exam]];
   return shuffle(pool);
 }
 
-function startQuiz() {
-  const pool = buildPool();
-  st = {
-    pool,
-    remaining: [...pool],
-    batchQs: [],
-    batchIdx: 0,
-    batchCorrect: 0,
-    batchWrong: 0,
-    totalCorrect: 0,
-    totalWrong: 0,
-    totalAsked: 0,
-    totalQ: pool.length,
-    batchNum: 0,
-    totalBatches: Math.ceil(pool.length / BATCH),
-    answered: false
+function startQuiz(){
+  const pool=buildPool();
+  st={
+    pool,remaining:[...pool],
+    batchQs:[],batchIdx:0,
+    batchCorrect:0,batchWrong:0,
+    totalCorrect:0,totalWrong:0,totalAsked:0,
+    totalQ:pool.length,
+    batchNum:0,totalBatches:Math.ceil(pool.length/BATCH),
+    answered:false
   };
   startNextBatch();
 }
 
-function startNextBatch() {
-  if (st.remaining.length === 0) { showFinal(); return; }
-  const take = cfg.mode === 'all' ? st.remaining.length : Math.min(BATCH, st.remaining.length);
-  st.batchQs = st.remaining.splice(0, take);
-  st.batchIdx = 0;
-  st.batchCorrect = 0;
-  st.batchWrong = 0;
-  st.batchNum++;
+function startNextBatch(){
+  if(st.remaining.length===0){showFinal();return;}
+  const take=cfg.mode==='all'?st.remaining.length:Math.min(BATCH,st.remaining.length);
+  st.batchQs=st.remaining.splice(0,take);
+  st.batchIdx=0;st.batchCorrect=0;st.batchWrong=0;st.batchNum++;
   updateHdr();
   showScreen('quiz');
   renderQ();
 }
 
-function updateHdr() {
-  const lbl = cfg.exam === 'both' ? 'Сети + HTML'
-    : cfg.exam === 'networks' ? 'Компьютерные сети' : 'HTML и веб';
-  document.getElementById('qName').textContent = lbl;
-  const bi = document.getElementById('qBatch');
-  bi.innerHTML = cfg.mode === 'batch'
-    ? `Этап <span>${st.batchNum}</span> из <span>${st.totalBatches}</span>` : '';
+function updateHdr(){
+  const lbl=cfg.exam==='both'?'Сети + HTML':cfg.exam==='networks'?'Компьютерные сети':'HTML и веб';
+  document.getElementById('qName').textContent=lbl;
+  const bi=document.getElementById('qBatch');
+  bi.innerHTML=cfg.mode==='batch'?`Этап <span>${st.batchNum}</span> из <span>${st.totalBatches}</span>`:'';
 }
 
-function hasCode(str) {
-  return /<[a-zA-ZА-Яа-я]/.test(str) || str.startsWith('<') || str.includes('/>') || str.includes('</');
-}
+function hasCode(s){return/<[a-zA-ZА-Яа-я]/.test(s)||s.startsWith('<')||s.includes('/>')||s.includes('</')}
 
-function renderQ() {
+function renderQ(){
   stopTimer();
-  const q = st.batchQs[st.batchIdx];
-  const bTotal = st.batchQs.length;
-  st.answered = false;
+  const q=st.batchQs[st.batchIdx];
+  const bT=st.batchQs.length;
+  st.answered=false;
 
-  const pct = (st.batchIdx / bTotal) * 100;
-  document.getElementById('pbar').style.width = pct + '%';
-  document.getElementById('qCur').textContent = st.batchIdx + 1;
-  document.getElementById('qTot').textContent = bTotal;
-  document.getElementById('sC').textContent = st.batchCorrect;
-  document.getElementById('sW').textContent = st.batchWrong;
-  document.getElementById('qNum').textContent = 'Вопрос ' + (st.batchIdx + 1);
-  document.getElementById('qText').textContent = q.question;
+  document.getElementById('pbar').style.width=(st.batchIdx/bT*100)+'%';
+  document.getElementById('qCur').textContent=st.batchIdx+1;
+  document.getElementById('qTot').textContent=bT;
+  document.getElementById('sC').textContent=st.batchCorrect;
+  document.getElementById('sW').textContent=st.batchWrong;
+  document.getElementById('qNum').textContent='Вопрос '+(st.batchIdx+1);
+  document.getElementById('qText').textContent=q.question;
 
-  const isLast = (st.batchIdx + 1 >= bTotal);
-  document.getElementById('nxtTxt').textContent = isLast
-    ? (cfg.mode === 'all' || st.remaining.length === 0 ? 'Завершить' : 'К итогам') : 'Следующий';
+  const isLast=(st.batchIdx+1>=bT);
+  document.getElementById('nxtTxt').textContent=isLast
+    ?(cfg.mode==='all'||st.remaining.length===0?'Завершить':'К итогам'):'Следующий';
 
-  const shuffled = shuffle(q.answers);
-  const labels = ['A','B','C','D','E'];
-  const list = document.getElementById('alist');
-  list.innerHTML = '';
-  shuffled.forEach((ans, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'abtn';
-    btn.dataset.correct = ans.correct;
-    const isCode = hasCode(ans.text);
-    btn.innerHTML = `<span class="albl">${labels[i]}</span><span class="atxt ${isCode ? '' : 'normal'}">${escHtml(ans.text)}</span>`;
-    btn.addEventListener('click', () => pick(btn, ans.correct));
+  const labels=['A','B','C','D','E'];
+  const list=document.getElementById('alist');
+  list.innerHTML='';
+  shuffle(q.answers).forEach((ans,i)=>{
+    const btn=document.createElement('button');
+    btn.className='abtn';
+    btn.dataset.correct=ans.correct;
+    const isCode=hasCode(ans.text);
+    btn.innerHTML=`<span class="albl">${labels[i]}</span><span class="atxt ${isCode?'':'normal'}">${esc(ans.text)}</span>`;
+    btn.addEventListener('click',()=>pick(btn,ans.correct));
     list.appendChild(btn);
   });
 
-  document.getElementById('fb').className = 'feedback';
+  document.getElementById('fb').className='feedback';
   document.getElementById('nxtwrap').classList.remove('vis');
-
-  const wrap = document.getElementById('qwrap');
-  wrap.style.animation = 'none'; wrap.offsetHeight; wrap.style.animation = '';
-
+  const w=document.getElementById('qwrap');
+  w.style.animation='none';w.offsetHeight;w.style.animation='';
   startTimer();
 }
 
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-function startTimer() {
-  timerLeft = TIMER_SEC;
+function startTimer(){
+  timerLeft=TIMER_SEC;
   updateTimerUI(timerLeft);
-  timerInterval = setInterval(() => {
+  timerInterval=setInterval(()=>{
     timerLeft--;
     updateTimerUI(timerLeft);
-    if (timerLeft <= 0) {
-      stopTimer();
-      timeOut();
-    }
-  }, 1000);
+    if(timerLeft<=0){stopTimer();timeOut();}
+  },1000);
 }
 
-function stopTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
+function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
+
+function updateTimerUI(sec){
+  const n=Math.max(0,sec);
+  document.getElementById('timerNum').textContent=n;
+  const offset=CIRC*(1-n/TIMER_SEC);
+  const arc=document.getElementById('timerArc');
+  arc.style.strokeDashoffset=offset;
+  const tnum=document.getElementById('timerNum');
+  if(n<=10){arc.style.stroke='var(--wrong)';tnum.style.color='var(--wrong)';}
+  else if(n<=20){arc.style.stroke='#fbbf24';tnum.style.color='#fbbf24';}
+  else{arc.style.stroke='var(--accent)';tnum.style.color='var(--text)';}
 }
 
-function updateTimerUI(sec) {
-  const n = Math.max(0, sec);
-  document.getElementById('timerNum').textContent = n;
-  const offset = CIRC * (1 - n / TIMER_SEC);
-  const arc = document.getElementById('timerArc');
-  arc.style.strokeDashoffset = offset;
-  if (n <= 10) {
-    arc.style.stroke = 'var(--wrong)';
-    document.getElementById('timerNum').style.color = 'var(--wrong)';
-  } else if (n <= 20) {
-    arc.style.stroke = '#fbbf24';
-    document.getElementById('timerNum').style.color = '#fbbf24';
-  } else {
-    arc.style.stroke = 'var(--accent)';
-    document.getElementById('timerNum').style.color = 'var(--text)';
-  }
-}
-
-function timeOut() {
-  if (st.answered) return;
-  st.answered = true;
-  st.batchWrong++;
-  st.totalWrong++;
-
-  const allBtns = document.querySelectorAll('.abtn');
-  allBtns.forEach(b => {
+function timeOut(){
+  if(st.answered)return;
+  st.answered=true;
+  st.batchWrong++;st.totalWrong++;
+  document.querySelectorAll('.abtn').forEach(b=>{
     b.classList.add('disabled');
-    if (b.dataset.correct === 'true') b.classList.add('reveal');
+    if(b.dataset.correct==='true')b.classList.add('reveal');
     else b.classList.add('timeout');
   });
-
-  const fb = document.getElementById('fb');
-  fb.className = 'feedback wrong vis';
-  document.getElementById('fbIcon').textContent = '⏱';
-  document.getElementById('fbText').textContent = 'Время вышло! Правильный ответ выделен.';
-  document.getElementById('sW').textContent = st.batchWrong;
+  const fb=document.getElementById('fb');
+  fb.className='feedback wrong vis';
+  document.getElementById('fbIcon').innerHTML='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  document.getElementById('fbText').textContent='Время вышло! Правильный ответ выделен.';
+  document.getElementById('sW').textContent=st.batchWrong;
   document.getElementById('nxtwrap').classList.add('vis');
 }
 
-function pick(btn, isCorrect) {
-  if (st.answered) return;
-  st.answered = true;
+function pick(btn,isCorrect){
+  if(st.answered)return;
+  st.answered=true;
   stopTimer();
-
-  const allBtns = document.querySelectorAll('.abtn');
-  allBtns.forEach(b => b.classList.add('disabled'));
-
-  const fb = document.getElementById('fb');
-  if (isCorrect) {
+  document.querySelectorAll('.abtn').forEach(b=>b.classList.add('disabled'));
+  const fb=document.getElementById('fb');
+  if(isCorrect){
     btn.classList.add('correct');
-    st.batchCorrect++; st.totalCorrect++;
-    fb.className = 'feedback correct vis';
-    document.getElementById('fbIcon').textContent = '✓';
-    document.getElementById('fbText').textContent = 'Верно!';
-  } else {
+    st.batchCorrect++;st.totalCorrect++;
+    fb.className='feedback correct vis';
+    document.getElementById('fbIcon').innerHTML='<polyline points="20 6 9 17 4 12"/>';
+    document.getElementById('fbText').textContent='Верно!';
+  }else{
     btn.classList.add('wrong');
-    st.batchWrong++; st.totalWrong++;
-    fb.className = 'feedback wrong vis';
-    document.getElementById('fbIcon').textContent = '✗';
-    document.getElementById('fbText').textContent = 'Неверно — правильный ответ выделен.';
-    allBtns.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('reveal'); });
+    st.batchWrong++;st.totalWrong++;
+    fb.className='feedback wrong vis';
+    document.getElementById('fbIcon').innerHTML='<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    document.getElementById('fbText').textContent='Неверно — правильный ответ выделен.';
+    document.querySelectorAll('.abtn').forEach(b=>{if(b.dataset.correct==='true')b.classList.add('reveal');});
   }
-  document.getElementById('sC').textContent = st.batchCorrect;
-  document.getElementById('sW').textContent = st.batchWrong;
+  document.getElementById('sC').textContent=st.batchCorrect;
+  document.getElementById('sW').textContent=st.batchWrong;
   document.getElementById('nxtwrap').classList.add('vis');
 }
 
-function nextQ() {
-  st.batchIdx++;
-  st.totalAsked++;
-  if (st.batchIdx >= st.batchQs.length) {
-    cfg.mode === 'all' ? showFinal() : showBatchResult();
-  } else {
-    renderQ();
-  }
+function nextQ(){
+  st.batchIdx++;st.totalAsked++;
+  if(st.batchIdx>=st.batchQs.length){
+    cfg.mode==='all'?showFinal():showBatchResult();
+  }else{renderQ();}
 }
 
-function showBatchResult() {
+function showBatchResult(){
   stopTimer();
-  const correct = st.batchCorrect;
-  const total = st.batchQs.length;
-  const pct = Math.round((correct / total) * 100);
-  const asked = st.totalAsked;
-  const allTotal = st.totalQ;
-  const overallPct = Math.round((asked / allTotal) * 100);
-  const hasMore = st.remaining.length > 0;
-
+  const correct=st.batchCorrect,total=st.batchQs.length;
+  const pct=Math.round(correct/total*100);
+  const asked=st.totalAsked,allT=st.totalQ;
+  const oPct=Math.round(asked/allT*100);
+  const hasMore=st.remaining.length>0;
   showScreen('batchResult');
-  document.getElementById('pbar').style.width = '100%';
-  document.getElementById('brC').textContent = correct;
-  document.getElementById('brT').textContent = total;
-
-  let title, sub;
-  if (pct >= 85) { title = '🎉 Отличный этап!'; sub = 'Вы отлично справились с этим блоком.'; }
-  else if (pct >= 60) { title = '👍 Хорошо!'; sub = 'Неплохой результат. Большинство вопросов взяты.'; }
-  else { title = '📚 Есть куда расти'; sub = 'Не страшно — повторите ошибки и идите дальше.'; }
-
-  document.getElementById('brTitle').textContent = title;
-  document.getElementById('brSub').textContent = sub;
-  setTimeout(() => { document.getElementById('brPF').style.width = overallPct + '%'; }, 100);
-  document.getElementById('brPL').textContent = asked + ' / ' + allTotal + ' пройдено';
-
-  const acts = document.getElementById('brAct');
-  acts.innerHTML = '';
-  const bh = document.createElement('button');
-  bh.className = 'bsec'; bh.textContent = 'На главную'; bh.onclick = goHome;
-  acts.appendChild(bh);
-
-  if (hasMore) {
-    const bn = document.createElement('button');
-    bn.className = 'bpri';
-    const nc = Math.min(BATCH, st.remaining.length);
-    bn.textContent = `Следующие ${nc} →`;
-    bn.onclick = startNextBatch;
-    acts.appendChild(bn);
-  } else {
-    const bf = document.createElement('button');
-    bf.className = 'bpri'; bf.textContent = 'Итоговый результат →';
-    bf.onclick = showFinal;
-    acts.appendChild(bf);
+  document.getElementById('pbar').style.width='100%';
+  document.getElementById('brC').textContent=correct;
+  document.getElementById('brT').textContent=total;
+  let title,sub;
+  if(pct>=85){title='Отличный этап!';sub='Вы отлично справились с этим блоком.';}
+  else if(pct>=60){title='Хорошо!';sub='Неплохой результат. Большинство вопросов взяты.';}
+  else{title='Есть куда расти';sub='Не страшно — повторите ошибки и идите дальше.';}
+  document.getElementById('brTitle').textContent=title;
+  document.getElementById('brSub').textContent=sub;
+  setTimeout(()=>{document.getElementById('brPF').style.width=oPct+'%';},100);
+  document.getElementById('brPL').textContent=asked+' / '+allT+' пройдено';
+  const acts=document.getElementById('brAct');
+  acts.innerHTML='';
+  const bh=document.createElement('button');
+  bh.className='bsec';bh.textContent='На главную';bh.onclick=goHome;acts.appendChild(bh);
+  if(hasMore){
+    const bn=document.createElement('button');
+    bn.className='bpri';
+    bn.textContent=`Следующие ${Math.min(BATCH,st.remaining.length)} →`;
+    bn.onclick=startNextBatch;acts.appendChild(bn);
+  }else{
+    const bf=document.createElement('button');
+    bf.className='bpri';bf.textContent='Итоговый результат →';bf.onclick=showFinal;acts.appendChild(bf);
   }
 }
 
-function showFinal() {
+function showFinal(){
   stopTimer();
-  const total = st.totalAsked || st.batchQs.length;
-  const correct = st.totalCorrect;
-  const wrong = st.totalWrong;
-  const pct = Math.round((correct / total) * 100);
-
+  const total=st.totalAsked||st.batchQs.length;
+  const correct=st.totalCorrect,wrong=st.totalWrong;
+  const pct=Math.round(correct/total*100);
   showScreen('results');
-  document.getElementById('pbar').style.width = '100%';
-  document.getElementById('rC').textContent = correct;
-  document.getElementById('rW').textContent = wrong;
-  document.getElementById('rT').textContent = total;
-
-  const pe = document.getElementById('sPct');
-  pe.textContent = pct + '%';
-  const g = pct >= 70 ? 'high' : pct >= 45 ? 'mid' : 'low';
-  pe.className = 'spct ' + g;
-
-  const ring = document.getElementById('sringFill');
-  ring.className = 'sring-fill ' + (pct < 45 ? 'low' : pct < 70 ? 'mid' : '');
-  setTimeout(() => { ring.style.strokeDashoffset = 339.3 - (pct / 100) * 339.3; }, 100);
-
-  let title, sub;
-  if (pct >= 85) { title = '🎉 Превосходно!'; sub = 'Вы знаете материал на отлично. Экзамен будет сдан!'; }
-  else if (pct >= 70) { title = '👍 Хорошо!'; sub = 'Хороший результат. Ещё немного — и будет отлично.'; }
-  else if (pct >= 45) { title = '📚 Средне'; sub = 'Рекомендуем пройти ещё раз, особенно слабые темы.'; }
-  else { title = '💪 Продолжай'; sub = 'Не сдавайся — повтори материал и попробуй снова!'; }
-
-  document.getElementById('rTitle').textContent = title;
-  document.getElementById('rSub').textContent = sub;
+  document.getElementById('pbar').style.width='100%';
+  document.getElementById('rC').textContent=correct;
+  document.getElementById('rW').textContent=wrong;
+  document.getElementById('rT').textContent=total;
+  const pe=document.getElementById('sPct');
+  pe.textContent=pct+'%';
+  const g=pct>=70?'high':pct>=45?'mid':'low';
+  pe.className='spct '+g;
+  const ring=document.getElementById('sringFill');
+  ring.className='sring-fill '+(pct<45?'low':pct<70?'mid':'');
+  setTimeout(()=>{ring.style.strokeDashoffset=339.3-(pct/100)*339.3;},100);
+  let title,sub;
+  if(pct>=85){title='Превосходно!';sub='Вы знаете материал на отлично. Экзамен будет сдан!';}
+  else if(pct>=70){title='Хорошо!';sub='Хороший результат. Ещё немного — и будет отлично.';}
+  else if(pct>=45){title='Средне';sub='Рекомендуем пройти ещё раз, особенно слабые темы.';}
+  else{title='Продолжай';sub='Не сдавайся — повтори материал и попробуй снова!';}
+  document.getElementById('rTitle').textContent=title;
+  document.getElementById('rSub').textContent=sub;
 }
 
-function restartSame() { startQuiz(); }
-function goHome() { stopTimer(); showScreen('home'); }
+/* HOME BUTTON & MODAL */
+function askHome(){
+  document.getElementById('modalOverlay').classList.add('vis');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('vis');
+}
+function confirmHome(){
+  closeModal();
+  stopTimer();
+  goHome();
+}
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+document.getElementById('modalOverlay').addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+
+function restartSame(){startQuiz();}
+function goHome(){stopTimer();showScreen('home');}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
 }
