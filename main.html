@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квиз — Сети и HTML</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.08);
+  --ghov:rgba(255,255,255,0.07);--accent:#6ee7b7;--adim:rgba(110,231,183,0.12);
+  --aglow:rgba(110,231,183,0.25);--indigo:#818cf8;--idim:rgba(129,140,248,0.12);
+  --wrong:#f87171;--wdim:rgba(248,113,113,0.12);
+  --text:#e8eaf0;--muted:#6b7280;--dim:#9ca3af;
+  --r:16px;--rs:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-30%;left:-20%;width:70%;height:70%;background:radial-gradient(ellipse,rgba(110,231,183,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;bottom:-20%;right:-10%;width:50%;height:60%;background:radial-gradient(ellipse,rgba(99,102,241,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+.screen{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.screen.hidden{display:none!important}
+
+/* HOME */
+#home{flex-direction:column;gap:2rem;text-align:center}
+.home-inner{width:100%;max-width:720px;margin:0 auto}
+
+.exam-toggle{display:inline-flex;gap:4px;padding:4px;border-radius:100px;background:rgba(255,255,255,0.05);border:1px solid var(--gb);margin-bottom:2.5rem}
+.etog{padding:9px 22px;border-radius:100px;border:none;background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s}
+.etog.active{background:var(--adim);color:var(--accent);border:1px solid rgba(110,231,183,0.3)}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.875rem}
+.mode-card{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:1.5rem;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:left;position:relative;overflow:hidden}
+.mode-card::after{content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity 0.25s;pointer-events:none}
+.mc-batch::after{background:linear-gradient(135deg,var(--adim),transparent)}
+.mc-all::after{background:linear-gradient(135deg,var(--idim),transparent)}
+.mode-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.35)}
+.mc-batch:hover{border-color:rgba(110,231,183,0.35)}
+.mc-all:hover{border-color:rgba(129,140,248,0.35)}
+.mode-card:hover::after{opacity:1}
+.mc-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;position:relative;z-index:1}
+.mc-batch .mc-icon{background:var(--adim);border:1px solid rgba(110,231,183,0.2)}
+.mc-all .mc-icon{background:var(--idim);border:1px solid rgba(129,140,248,0.2)}
+.mc-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:0.4rem;position:relative;z-index:1}
+.mc-desc{color:var(--muted);font-size:0.82rem;line-height:1.55;margin-bottom:1rem;position:relative;z-index:1}
+.mc-tags{display:flex;gap:0.4rem;flex-wrap:wrap;position:relative;z-index:1}
+.mc-tag{font-size:0.7rem;font-weight:500;padding:3px 9px;border-radius:100px}
+.mc-batch .mc-tag{background:var(--adim);color:var(--accent);border:1px solid rgba(110,231,183,0.2)}
+.mc-all .mc-tag{background:var(--idim);color:var(--indigo);border:1px solid rgba(129,140,248,0.2)}
+
+/* QUIZ */
+#quiz{flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0}
+
+.pbar-wrap{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.06);z-index:100}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a5f3fc);transition:width 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 12px var(--aglow)}
+
+.qhdr{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(13,15,20,0.88);border-bottom:1px solid var(--gb);padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.qhdr-left{display:flex;flex-direction:column;gap:1px;min-width:0}
+.qhdr-name{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:600;color:var(--muted)}
+.qhdr-batch{font-size:0.68rem;color:var(--muted)}
+.qhdr-batch span{color:var(--accent);font-weight:600}
+.qctr{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--muted);flex-shrink:0}
+.qctr em{color:var(--text);font-style:normal}
+.qstats{display:flex;gap:0.6rem;align-items:center;flex-shrink:0}
+.schip{display:flex;align-items:center;gap:4px;font-size:0.77rem;font-weight:500;padding:3px 10px;border-radius:100px}
+.schip.c{background:rgba(110,231,183,0.1);color:var(--accent);border:1px solid rgba(110,231,183,0.2)}
+.schip.w{background:rgba(248,113,113,0.1);color:var(--wrong);border:1px solid rgba(248,113,113,0.2)}
+
+/* TIMER */
+.timer-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.timer-ring{position:relative;width:36px;height:36px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:3}
+.timer-arc{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:94.25;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke 0.3s}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text)}
+
+.qbody{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:2.25rem 1rem 5rem}
+.qwrap{width:100%;max-width:700px;animation:slideUp 0.32s cubic-bezier(0.4,0,0.2,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.qnum{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.8rem;display:flex;align-items:center;gap:8px}
+.qnum::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(110,231,183,0.2),transparent)}
+.qtext{font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.25rem);font-weight:600;line-height:1.55;margin-bottom:1.6rem;color:var(--text)}
+.alist{display:flex;flex-direction:column;gap:0.55rem}
+.abtn{display:flex;align-items:flex-start;gap:0.8rem;padding:0.85rem 1rem;background:var(--glass);border:1px solid var(--gb);border-radius:var(--rs);cursor:pointer;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);text-align:left;width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.92rem;line-height:1.5;position:relative;overflow:hidden}
+.abtn:not(.disabled):hover{border-color:rgba(110,231,183,0.35);transform:translateX(3px);background:rgba(255,255,255,0.06)}
+.albl{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;transition:all 0.2s;color:var(--dim);position:relative;z-index:1}
+.atxt{position:relative;z-index:1;padding-top:3px;font-family:monospace;font-size:0.88rem;word-break:break-all}
+.atxt.normal{font-family:'DM Sans',sans-serif;font-size:0.92rem;word-break:normal}
+.abtn.correct{border-color:rgba(110,231,183,0.5);background:var(--adim);animation:cpulse 0.35s ease}
+.abtn.correct .albl{background:var(--accent);border-color:var(--accent);color:#0d0f14}
+@keyframes cpulse{0%{transform:scale(1)}50%{transform:scale(1.01)}100%{transform:scale(1)}}
+.abtn.wrong{border-color:rgba(248,113,113,0.4);background:var(--wdim);animation:shake 0.38s ease}
+.abtn.wrong .albl{background:var(--wrong);border-color:var(--wrong);color:#0d0f14}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}60%{transform:translateX(5px)}80%{transform:translateX(-3px)}}
+.abtn.reveal{border-color:rgba(110,231,183,0.3);background:rgba(110,231,183,0.05)}
+.abtn.reveal .albl{background:rgba(110,231,183,0.2);border-color:rgba(110,231,183,0.4);color:var(--accent)}
+.abtn.disabled{cursor:default;pointer-events:none}
+.abtn.timeout{border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.04)}
+
+.feedback{margin-top:1rem;padding:0.75rem 1rem;border-radius:var(--rs);font-size:0.85rem;font-weight:500;display:flex;align-items:center;gap:0.65rem;opacity:0;transition:opacity 0.2s}
+.feedback.vis{opacity:1;animation:fadeIn 0.22s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.feedback.correct{background:var(--adim);border:1px solid rgba(110,231,183,0.25);color:var(--accent)}
+.feedback.wrong{background:var(--wdim);border:1px solid rgba(248,113,113,0.25);color:var(--wrong)}
+
+.nxtwrap{margin-top:1.4rem;display:flex;justify-content:flex-end;opacity:0;transform:translateY(7px);transition:all 0.3s 0.12s;pointer-events:none}
+.nxtwrap.vis{opacity:1;transform:translateY(0);pointer-events:all}
+.btnnxt{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:100px;background:var(--accent);border:none;color:#0d0f14;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btnnxt:hover{background:#a7f3d0;transform:scale(1.03);box-shadow:0 0 28px var(--aglow)}
+.btnnxt svg{transition:transform 0.2s}
+.btnnxt:hover svg{transform:translateX(3px)}
+
+/* BATCH RESULT */
+#batchResult{flex-direction:column;align-items:center;gap:1.75rem;text-align:center;padding:2.5rem 1rem}
+.bcard{width:100%;max-width:500px;background:var(--glass);border:1px solid var(--gb);border-radius:22px;padding:2.25rem 1.75rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;animation:slideUp 0.45s cubic-bezier(0.4,0,0.2,1)}
+.bcard::before{content:'';position:absolute;top:-40%;left:-15%;width:130%;height:90%;background:radial-gradient(ellipse,rgba(110,231,183,0.05) 0%,transparent 65%);pointer-events:none}
+.bscore{display:flex;align-items:center;justify-content:center;gap:1.25rem;margin-bottom:1.4rem}
+.bnum{font-family:'Syne',sans-serif;font-weight:800;line-height:1}
+.bnum.c{font-size:3.2rem;color:var(--accent)}
+.bnum.sep{font-size:1.8rem;color:var(--muted)}
+.bnum.t{font-size:2.2rem;color:var(--dim)}
+.btitle{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;margin-bottom:0.4rem}
+.bsub{color:var(--muted);font-size:0.87rem;line-height:1.6;margin-bottom:1.6rem}
+.bprogrow{display:flex;align-items:center;gap:0.7rem;margin-bottom:1.6rem}
+.bprogbar{flex:1;height:5px;border-radius:10px;background:rgba(255,255,255,0.06);overflow:hidden}
+.bprogfill{height:100%;background:linear-gradient(90deg,var(--accent),#a5f3fc);border-radius:10px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1) 0.3s}
+.bproglbl{font-size:0.73rem;color:var(--muted);font-weight:500;white-space:nowrap}
+.bactions{display:flex;gap:0.6rem;flex-wrap:wrap}
+.bsec{flex:1;min-width:100px;padding:10px 14px;border-radius:100px;background:var(--glass);border:1px solid var(--gb);color:var(--dim);font-family:'DM Sans',sans-serif;font-size:0.83rem;font-weight:500;cursor:pointer;transition:all 0.2s}
+.bsec:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
+.bpri{flex:1;min-width:110px;padding:10px 16px;border-radius:100px;background:var(--accent);border:none;color:#0d0f14;font-family:'DM Sans',sans-serif;font-size:0.83rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.bpri:hover{background:#a7f3d0;box-shadow:0 0 22px var(--aglow);transform:scale(1.02)}
+
+/* RESULTS */
+#results{flex-direction:column;align-items:center;gap:1.75rem;text-align:center;padding:2.5rem 1rem}
+.rcard{width:100%;max-width:520px;background:var(--glass);border:1px solid var(--gb);border-radius:22px;padding:2.5rem 2rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;animation:slideUp 0.5s cubic-bezier(0.4,0,0.2,1)}
+.rcard::before{content:'';position:absolute;top:-50%;left:-20%;width:140%;height:100%;background:radial-gradient(ellipse,rgba(110,231,183,0.06) 0%,transparent 60%);pointer-events:none}
+.sring-wrap{display:flex;justify-content:center;margin-bottom:1.5rem}
+.sring{position:relative;width:130px;height:130px}
+.sring svg{transform:rotate(-90deg)}
+.sring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.sring-fill{fill:none;stroke:url(#sg);stroke-width:8;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s}
+.sring-fill.low{stroke:var(--wrong)}
+.sring-fill.mid{stroke:#fbbf24}
+.stxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.spct{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;line-height:1}
+.spct.high{color:var(--accent)}.spct.mid{color:#fbbf24}.spct.low{color:var(--wrong)}
+.slbl{font-size:0.65rem;color:var(--muted);font-weight:500;letter-spacing:0.06em;text-transform:uppercase}
+.rtitle{font-family:'Syne',sans-serif;font-size:1.55rem;font-weight:800;margin-bottom:0.4rem}
+.rsub{color:var(--muted);font-size:0.87rem;margin-bottom:1.6rem;line-height:1.6}
+.rstats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:1.6rem}
+.rstat{padding:0.875rem;border-radius:var(--rs);background:rgba(255,255,255,0.03);border:1px solid var(--gb)}
+.rstat-n{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;line-height:1;margin-bottom:0.2rem}
+.rstat-n.c{color:var(--accent)}.rstat-n.w{color:var(--wrong)}.rstat-n.t{color:var(--dim)}
+.rstat-l{font-size:0.67rem;color:var(--muted);font-weight:500;letter-spacing:0.04em;text-transform:uppercase}
+.raction{display:flex;gap:0.6rem;flex-wrap:wrap}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:10px}
+
+@media(max-width:600px){
+  .mode-grid{grid-template-columns:1fr}
+  .qhdr{padding:0.65rem 1rem}
+  .qstats{gap:0.35rem}
+  .schip{font-size:0.7rem;padding:2px 8px}
+  .qbody{padding:1.75rem 0.875rem 4.5rem}
+  .rstats{grid-template-columns:1fr 1fr}
+  .rstats .rstat:last-child{grid-column:span 2}
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<section class="screen" id="home">
+  <div class="home-inner">
+    <div class="exam-toggle">
+      <button class="etog active" onclick="setExam('both',this)">🌐+🖥️ Всё</button>
+      <button class="etog" onclick="setExam('networks',this)">🌐 Сети (111)</button>
+      <button class="etog" onclick="setExam('html',this)">🖥️ HTML (107)</button>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card mc-batch" onclick="selectMode('batch')">
+        <div class="mc-icon">📦</div>
+        <div class="mc-name">По 20 вопросов</div>
+        <div class="mc-desc">Вопросы разбиты на этапы по 20. После каждого — итог и переход к следующему. Без повторений.</div>
+        <div class="mc-tags">
+          <span class="mc-tag">20 за раз</span>
+          <span class="mc-tag">Без повторов</span>
+          <span class="mc-tag">⏱ 30 сек</span>
+        </div>
+      </div>
+      <div class="mode-card mc-all" onclick="selectMode('all')">
+        <div class="mc-icon">🚀</div>
+        <div class="mc-name">Все сразу</div>
+        <div class="mc-desc">Все вопросы в случайном порядке за один непрерывный проход. Марафон для уверенных.</div>
+        <div class="mc-tags" style="gap:0.4rem">
+          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">218 вопросов</span>
+          <span class="mc-tag" style="background:var(--idim);color:var(--indigo);border-color:rgba(129,140,248,0.2)">⏱ 30 сек</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="screen hidden" id="quiz" style="flex-direction:column;align-items:stretch;justify-content:flex-start;padding:0;min-height:100vh">
+  <div class="pbar-wrap"><div class="pbar-fill" id="pbar"></div></div>
+  <div style="display:flex;flex-direction:column;min-height:100vh">
+    <div class="qhdr">
+      <div class="qhdr-left">
+        <div class="qhdr-name" id="qName">—</div>
+        <div class="qhdr-batch" id="qBatch"></div>
+      </div>
+      <div class="qctr"><em id="qCur">1</em> / <span id="qTot">0</span></div>
+      <div class="qstats">
+        <div class="schip c">✓ <span id="sC">0</span></div>
+        <div class="schip w">✗ <span id="sW">0</span></div>
+      </div>
+      <div class="timer-wrap">
+        <div class="timer-ring">
+          <svg viewBox="0 0 36 36" width="36" height="36">
+            <circle class="timer-bg" cx="18" cy="18" r="15"/>
+            <circle class="timer-arc" id="timerArc" cx="18" cy="18" r="15"/>
+          </svg>
+          <div class="timer-num" id="timerNum">30</div>
+        </div>
+      </div>
+    </div>
+    <div class="qbody">
+      <div class="qwrap" id="qwrap">
+        <div class="qnum" id="qNum">Вопрос 1</div>
+        <div class="qtext" id="qText"></div>
+        <div class="alist" id="alist"></div>
+        <div class="feedback" id="fb">
+          <span id="fbIcon"></span><span id="fbText"></span>
+        </div>
+        <div class="nxtwrap" id="nxtwrap">
+          <button class="btnnxt" onclick="nextQ()">
+            <span id="nxtTxt">Следующий</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BATCH RESULT -->
+<section class="screen hidden" id="batchResult">
+  <div class="bcard">
+    <div class="bscore">
+      <div class="bnum c" id="brC">0</div>
+      <div class="bnum sep">/</div>
+      <div class="bnum t" id="brT">20</div>
+    </div>
+    <div class="btitle" id="brTitle">Этап завершён</div>
+    <div class="bsub" id="brSub"></div>
+    <div class="bprogrow">
+      <div class="bprogbar"><div class="bprogfill" id="brPF" style="width:0%"></div></div>
+      <div class="bproglbl" id="brPL"></div>
+    </div>
+    <div class="bactions" id="brAct"></div>
+  </div>
+</section>
+
+<!-- FINAL RESULTS -->
+<section class="screen hidden" id="results">
+  <div class="rcard">
+    <svg width="0" height="0">
+      <defs>
+        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6ee7b7"/>
+          <stop offset="100%" stop-color="#a5f3fc"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="sring-wrap">
+      <div class="sring">
+        <svg viewBox="0 0 120 120" width="130" height="130">
+          <circle class="sring-bg" cx="60" cy="60" r="54"/>
+          <circle class="sring-fill" id="sringFill" cx="60" cy="60" r="54"/>
+        </svg>
+        <div class="stxt">
+          <div class="spct" id="sPct">—</div>
+          <div class="slbl">итог</div>
+        </div>
+      </div>
+    </div>
+    <div class="rtitle" id="rTitle">Тест завершён</div>
+    <div class="rsub" id="rSub"></div>
+    <div class="rstats">
+      <div class="rstat"><div class="rstat-n c" id="rC">0</div><div class="rstat-l">Верных</div></div>
+      <div class="rstat"><div class="rstat-n w" id="rW">0</div><div class="rstat-l">Ошибок</div></div>
+      <div class="rstat"><div class="rstat-n t" id="rT">0</div><div class="rstat-l">Всего</div></div>
+    </div>
+    <div class="raction">
+      <button class="bsec" onclick="goHome()">На главную</button>
+      <button class="bpri" onclick="restartSame()">↺ Повторить</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const DB = {
+  networks: [{"id":1,"question":"Предоставляет услуги локальной сети.","answers":[{"id":"A","text":"сервер","correct":true},{"id":"B","text":"клавиатура","correct":false},{"id":"C","text":"мэйнфрейм","correct":false},{"id":"D","text":"услуга","correct":false},{"id":"E","text":"попутчик","correct":false}]},{"id":2,"question":"Каналы связи набор компьютеров, соединенных посредством","answers":[{"id":"A","text":"компьютерная сеть","correct":true},{"id":"B","text":"конференция","correct":false},{"id":"C","text":"дешифрование","correct":false},{"id":"D","text":"сервер","correct":false},{"id":"E","text":"порт назначения","correct":false}]},{"id":3,"question":"Показать сетевые протоколы","answers":[{"id":"A","text":"TCP/IP, IPX/SPX и NEWLINK, APP, APLLE TALK, DECnet","correct":true},{"id":"B","text":"Протокол, порт, интерфейс, фрагмент","correct":false},{"id":"C","text":"Шина, звездочка, комплекс, кольцо","correct":false},{"id":"D","text":"Местные и региональные сети","correct":false},{"id":"E","text":"HTML, SQL, LINUX, UNIX","correct":false}]},{"id":4,"question":"Выберите компонент, не относящийся к сети.","answers":[{"id":"A","text":"концентратор","correct":true},{"id":"B","text":"коммуникация","correct":false},{"id":"C","text":"маршрутизатор","correct":false},{"id":"D","text":"мост","correct":false},{"id":"E","text":"шлюз","correct":false}]},{"id":5,"question":"Устройство, которое разделяет общую среду передачи данных в сети на сегменты и пересылает входящие данные в другой сегмент, основываясь исключительно на его адресе.","answers":[{"id":"A","text":"мост","correct":true},{"id":"B","text":"шлюз","correct":false},{"id":"C","text":"трафик","correct":false},{"id":"D","text":"коммуникатор","correct":false},{"id":"E","text":"концентратор","correct":false}]},{"id":6,"question":"Распространяется более чем на три компьютера в сети.","answers":[{"id":"A","text":"адрес","correct":true},{"id":"B","text":"авторизоваться","correct":false},{"id":"C","text":"имя","correct":false},{"id":"D","text":"рисунок","correct":false},{"id":"E","text":"мое устройство","correct":false}]},{"id":7,"question":"Использует волоконно-оптические кабели для передачи двоичной информации.","answers":[{"id":"A","text":"световые импульсы","correct":true},{"id":"B","text":"световые сигналы","correct":false},{"id":"C","text":"рамка","correct":false},{"id":"D","text":"звуки","correct":false},{"id":"E","text":"электрические сигналы","correct":false}]},{"id":8,"question":"Физическая конфигурация подключения компьютера","answers":[{"id":"A","text":"топология","correct":true},{"id":"B","text":"шифрование","correct":false},{"id":"C","text":"слиять","correct":false},{"id":"D","text":"дешифрование","correct":false},{"id":"E","text":"для подключения","correct":false}]},{"id":9,"question":"Типы сетевых конфигураций","answers":[{"id":"A","text":"полное соединение неполное соединение","correct":true},{"id":"B","text":"контакт полный контакт","correct":false},{"id":"C","text":"общение — это не общение","correct":false},{"id":"D","text":"не команда","correct":false},{"id":"E","text":"не связан с дорогой","correct":false}]},{"id":10,"question":"Сеть с множественными методами контроля доступа и обнаружения коллизий.","answers":[{"id":"A","text":"ЭН","correct":true},{"id":"B","text":"ФДДИ","correct":false},{"id":"C","text":"TokenRing","correct":false},{"id":"D","text":"Arcnet","correct":false},{"id":"E","text":"нет ответа","correct":false}]},{"id":11,"question":"Сеть, которая восстанавливает свою способность к многозадачности после многочисленных отказов.","answers":[{"id":"A","text":"ФДДИ","correct":true},{"id":"B","text":"ArcNet","correct":false},{"id":"C","text":"TokenRing","correct":false},{"id":"D","text":"ЭН","correct":false},{"id":"E","text":"Такой сети не существует.","correct":false}]},{"id":12,"question":"Эталонная сетевая модель","answers":[{"id":"A","text":"ОСИ","correct":true},{"id":"B","text":"ЭН","correct":false},{"id":"C","text":"Ксерокс","correct":false},{"id":"D","text":"IEEE","correct":false},{"id":"E","text":"ACSII","correct":false}]},{"id":13,"question":"Уровень, на котором данные шифруются и расшифровываются.","answers":[{"id":"A","text":"Предложение","correct":true},{"id":"B","text":"транспорт","correct":false},{"id":"C","text":"Физический канал","correct":false},{"id":"D","text":"онлайн","correct":false},{"id":"E","text":"канал","correct":false}]},{"id":14,"question":"Обеспечивает передачу данных между компьютерами.","answers":[{"id":"A","text":"TCP/IP (протокол управления передачей)","correct":true},{"id":"B","text":"Межсетевой обмен пакетами / Последовательный обмен пакетами (IPX/SPX)","correct":false},{"id":"C","text":"Сетевая система Xerox (XNS)","correct":false},{"id":"D","text":"набор протоколов OLI","correct":false},{"id":"E","text":"Apple Talk-Apple Macintosh","correct":false}]},{"id":15,"question":"Степень ослабления зависит от того, какая сторона регистрирует активность какой стороны в данный момент.","answers":[{"id":"A","text":"сессионный","correct":true},{"id":"B","text":"физический","correct":false},{"id":"C","text":"пригодный для использования","correct":false},{"id":"D","text":"Транспорт","correct":false},{"id":"E","text":"онлайн","correct":false}]},{"id":16,"question":"Уровень модели OSI, на котором работают маршрутизаторы.","answers":[{"id":"A","text":"Сеть","correct":true},{"id":"B","text":"канал","correct":false},{"id":"C","text":"применяемый","correct":false},{"id":"D","text":"транспорт","correct":false},{"id":"E","text":"онлайн","correct":false}]},{"id":17,"question":"Тип обмена информацией, предполагающий использование технологии передачи данных между двумя точками.","answers":[{"id":"A","text":"Только между компьютерами","correct":true},{"id":"B","text":"Только между компьютерами и периферийными устройствами.","correct":false},{"id":"C","text":"Между всеми компонентами сети","correct":false},{"id":"D","text":"Между приемопередатчиками хост-системы и компьютерами","correct":false},{"id":"E","text":"","correct":false}]},{"id":18,"question":"Уровень, определяющий тип подключения сетевого кабеля адаптера.","answers":[{"id":"A","text":"Физический","correct":true},{"id":"B","text":"канал","correct":false},{"id":"C","text":"транспорт","correct":false},{"id":"D","text":"онлайн","correct":false},{"id":"E","text":"слияние","correct":false}]},{"id":19,"question":"Почтовый стек, способный фрагментировать пакеты, имеющий подходящую систему адресации и отклоняющий широковещательные сообщения большой зоны.","answers":[{"id":"A","text":"TCP\\SPX","correct":true},{"id":"B","text":"СНА","correct":false},{"id":"C","text":"ОСИ","correct":false},{"id":"D","text":"NETBIOS/SMB","correct":false},{"id":"E","text":"IPX/SPX","correct":false}]},{"id":20,"question":"Сообщение, позволяющее приложениям взаимодействовать и обмениваться информацией.","answers":[{"id":"A","text":"Применяемый","correct":true},{"id":"B","text":"Транспорт","correct":false},{"id":"C","text":"Сеть","correct":false},{"id":"D","text":"Преданный","correct":false},{"id":"E","text":"маршрут","correct":false}]},{"id":21,"question":"Пакет, который должен быть доставлен одновременно нескольким узлам, состоящим из пронумерованных узлов, указанных в поле адреса.","answers":[{"id":"A","text":"Многоадресная рассылка","correct":true},{"id":"B","text":"Ограниченное многостраничное повествование","correct":false},{"id":"C","text":"обратная связь","correct":false},{"id":"D","text":"Транслировать","correct":false},{"id":"E","text":"Ограниченное вещание","correct":false}]},{"id":22,"question":"Приложение, поддерживающее все необходимые методы работы с группами новостей по электронной почте.","answers":[{"id":"A","text":"Windows Internet Explorer","correct":true},{"id":"B","text":"АвтоCAD","correct":false},{"id":"C","text":"MS Word","correct":false},{"id":"D","text":"CorelDraw","correct":false},{"id":"E","text":"AdobeResiders","correct":false}]},{"id":23,"question":"Метод размещения псевдослучайной последовательности в исходном имени генерации на основе ключей.","answers":[{"id":"A","text":"пообщаться","correct":true},{"id":"B","text":"Смена места","correct":false},{"id":"C","text":"замена","correct":false},{"id":"D","text":"Смешанное шифрование","correct":false},{"id":"E","text":"Аналитическое преобразование","correct":false}]},{"id":24,"question":"Что такое протокол SMTP (Simple Mail Transfer Protocol)?","answers":[{"id":"A","text":"Электронная почта","correct":true},{"id":"B","text":"Интернет","correct":false},{"id":"C","text":"Для сети","correct":false},{"id":"D","text":"Часть набора протоколов TCP/IP","correct":false},{"id":"E","text":"стек протоколов","correct":false}]},{"id":25,"question":"В каком году была внедрена система электронной почты?","answers":[{"id":"A","text":"1971","correct":true},{"id":"B","text":"1972","correct":false},{"id":"C","text":"1961","correct":false},{"id":"D","text":"1965","correct":false},{"id":"E","text":"1975","correct":false}]},{"id":26,"question":"Техническое оснащение Интернета — это:","answers":[{"id":"A","text":"компьютерные узлы, маршрутизаторы, канал связи, компьютеры","correct":true},{"id":"B","text":"компьютерные узлы, маршрутизаторы, канал связи","correct":false},{"id":"C","text":"разъемы, маршрутизаторы, канал связи, компьютеры","correct":false},{"id":"D","text":"компьютерные узлы, модем, канал связи, компьютеры","correct":false},{"id":"E","text":"компьютерные узлы, маршрутизаторы, адреса, компьютеры","correct":false}]},{"id":27,"question":"Поставщик услуг -","answers":[{"id":"A","text":"Компания, предоставляющая доступ в Интернет и услуги интернет-провайдера.","correct":true},{"id":"B","text":"один или несколько мощных компьютеров, постоянно подключенных к сети.","correct":false},{"id":"C","text":"устройство, которое пересылает пакеты информации из одного направления в другое через сеть.","correct":false},{"id":"D","text":"Устройство, которое подключает компьютер пользователя к Интернету через телефонную линию.","correct":false},{"id":"E","text":"Соглашение о правилах создания и поддержания сообщений в интернете. Инструмент для компаний, предоставляющих доступ к интернету и оказывающих услуги.","correct":false}]},{"id":28,"question":"Главные компьютеры -","answers":[{"id":"A","text":"один или несколько мощных компьютеров, постоянно подключенных к сети.","correct":true},{"id":"B","text":"пересылает пакеты информации из одного направления в другое через сеть.","correct":false},{"id":"C","text":"Устройство, которое подключает компьютер пользователя к Интернету через телефонную линию.","correct":false},{"id":"D","text":"Инструмент для согласования правил создания и поддержания сообщений в интернете.","correct":false},{"id":"E","text":"Компания, предоставляющая доступ в Интернет и услуги интернет-провайдера.","correct":false}]},{"id":29,"question":"Какой тип контента веб-сайта не включен?","answers":[{"id":"A","text":"разветвленный","correct":true},{"id":"B","text":"линейный","correct":false},{"id":"C","text":"гибридный","correct":false},{"id":"D","text":"Деревья","correct":false},{"id":"E","text":"решетка","correct":false}]},{"id":30,"question":"Пучок из двух проводов, один внутри другого.","answers":[{"id":"A","text":"коаксиальный","correct":true},{"id":"B","text":"двухпроводной","correct":false},{"id":"C","text":"Сеть","correct":false},{"id":"D","text":"технологический","correct":false},{"id":"E","text":"Спиральная линия","correct":false}]},{"id":31,"question":"Устройство, соединяющее несколько сетей в топологии «звезда» с одной сетью в топологии «звезда».","answers":[{"id":"A","text":"Шина для шоссе","correct":true},{"id":"B","text":"модем","correct":false},{"id":"C","text":"Терминатор","correct":false},{"id":"D","text":"конденсатор","correct":false},{"id":"E","text":"Сетевая карта","correct":false}]},{"id":32,"question":"Узел для отправки данных с использованием метода \"Пакеты связи\".","answers":[{"id":"A","text":"Обмен данными происходит в момент отправки.","correct":true},{"id":"B","text":"Информация фиксированной длины передается блоками и по первому нажатому каналу.","correct":false},{"id":"C","text":"Прямая связь, соединяющая канал внутри группы для отправки сообщений между двумя клиентами.","correct":false},{"id":"D","text":"Информация передается блоками фиксированной длины и по первому свободному каналу.","correct":false},{"id":"E","text":"Информация передается блоками фиксированной длины.","correct":false}]},{"id":33,"question":"Маршрутизаторы -","answers":[{"id":"A","text":"пересылает пакеты информации из одного направления в другое через сеть.","correct":true},{"id":"B","text":"Устройство, которое подключает компьютер пользователя к Интернету через телефонную линию.","correct":false},{"id":"C","text":"Инструмент для согласования правил создания и поддержания сообщений в интернете.","correct":false},{"id":"D","text":"Компания, предоставляющая доступ в Интернет и услуги интернет-провайдера.","correct":false},{"id":"E","text":"один или несколько мощных компьютеров, постоянно подключенных к сети.","correct":false}]},{"id":34,"question":"Тип передачи данных в узкополосных системах","answers":[{"id":"A","text":"Одночастотный цифровой сигнал","correct":true},{"id":"B","text":"Односторонний сигнал","correct":false},{"id":"C","text":"Аналоговый сигнал","correct":false},{"id":"D","text":"Цифровой сигнал на разных частотах","correct":false},{"id":"E","text":"Световые импульсы","correct":false}]},{"id":35,"question":"Слой, который группирует необработанные биты с физического уровня в кадр данных.","answers":[{"id":"A","text":"Канал","correct":true},{"id":"B","text":"Применяемый","correct":false},{"id":"C","text":"сессионный","correct":false},{"id":"D","text":"Сеть","correct":false},{"id":"E","text":"транспорт","correct":false}]},{"id":36,"question":"Путем размещения контрольных точек в потоке данных","answers":[{"id":"A","text":"сессионный","correct":true},{"id":"B","text":"онлайн","correct":false},{"id":"C","text":"применяемый","correct":false},{"id":"D","text":"Транспорт","correct":false},{"id":"E","text":"канал","correct":false}]},{"id":37,"question":"Группа сетевых протоколов, позволяющих узлам взаимодействовать друг с другом в сети, организованной иерархическим образом.","answers":[{"id":"A","text":"стек протоколов","correct":true},{"id":"B","text":"Порядок протоколов","correct":false},{"id":"C","text":"Протокольный канал","correct":false},{"id":"D","text":"Протоколы протоколов","correct":false},{"id":"E","text":"Группа протоколов","correct":false}]},{"id":38,"question":"Проверка адреса, маршрута и ошибок, повторная отправка запроса.","answers":[{"id":"A","text":"Трафик","correct":true},{"id":"B","text":"Применяемый","correct":false},{"id":"C","text":"Сеть","correct":false},{"id":"D","text":"Маршрут","correct":false},{"id":"E","text":"Канал","correct":false}]},{"id":39,"question":"Сеть, начинающаяся с 0, принадлежит к следующему классу.","answers":[{"id":"A","text":"А","correct":true},{"id":"B","text":"Д","correct":false},{"id":"C","text":"Е","correct":false},{"id":"D","text":"С","correct":false},{"id":"E","text":"Б","correct":false}]},{"id":40,"question":"Сетевые адреса, начинающиеся с 10, относятся к следующему классу.","answers":[{"id":"A","text":"Б","correct":true},{"id":"B","text":"С","correct":false},{"id":"C","text":"А","correct":false},{"id":"D","text":"Д","correct":false},{"id":"E","text":"Е","correct":false}]},{"id":41,"question":"Сетевые адреса, начинающиеся с 110, относятся к следующему классу.","answers":[{"id":"A","text":"С","correct":true},{"id":"B","text":"А","correct":false},{"id":"C","text":"Д","correct":false},{"id":"D","text":"в","correct":false},{"id":"E","text":"Е","correct":false}]},{"id":42,"question":"Развитие интернета обусловлено стоимостью передачи данных.","answers":[{"id":"A","text":"каналы спутниковой связи","correct":true},{"id":"B","text":"Коаксиальный кабель","correct":false},{"id":"C","text":"Каналы пакетной связи","correct":false},{"id":"D","text":"Модем","correct":false},{"id":"E","text":"Обмоточная пара","correct":false}]},{"id":43,"question":"Название доменного имени указано справа.","answers":[{"id":"A","text":"Полное доменное имя узла","correct":true},{"id":"B","text":"Имя узла","correct":false},{"id":"C","text":"Полудоменное имя Node.","correct":false},{"id":"D","text":"Зимнее доменное имя узла","correct":false},{"id":"E","text":"Доменное имя узла","correct":false}]},{"id":44,"question":"Универсально доступное имя","answers":[{"id":"A","text":"Открыть","correct":true},{"id":"B","text":"Основной","correct":false},{"id":"C","text":"Бесплатно","correct":false},{"id":"D","text":"Закрыто","correct":false},{"id":"E","text":"Электронный","correct":false}]},{"id":45,"question":"Первая страница веб-сайта является корнем дерева, но конец сайта показывает, что все его содержимое находится внутри неё.","answers":[{"id":"A","text":"Дерево","correct":true},{"id":"B","text":"Линия","correct":false},{"id":"C","text":"Случайный","correct":false},{"id":"D","text":"Структурированный","correct":false},{"id":"E","text":"Сетка","correct":false}]},{"id":46,"question":"Количество типов структур вычислительных узлов","answers":[{"id":"A","text":"5","correct":true},{"id":"B","text":"6","correct":false},{"id":"C","text":"2","correct":false},{"id":"D","text":"3","correct":false},{"id":"E","text":"4","correct":false}]},{"id":47,"question":"Как присвоить имя модулю вычислительного узла","answers":[{"id":"A","text":"логический модуль","correct":true},{"id":"B","text":"терминальный модуль","correct":false},{"id":"C","text":"модуль распределения","correct":false},{"id":"D","text":"модуль хранения","correct":false},{"id":"E","text":"модуль управления","correct":false}]},{"id":48,"question":"Основной элемент вычислительного узла","answers":[{"id":"A","text":"Модуль хоста","correct":true},{"id":"B","text":"Терминальный модуль","correct":false},{"id":"C","text":"Модуль связи","correct":false},{"id":"D","text":"Интерфейсный модуль","correct":false},{"id":"E","text":"Модуль управления с вычислительным узлом","correct":false}]},{"id":49,"question":"Модуль, использующий ресурсы вычислительного узла, когда они предоставляются модулем хоста, — это...","answers":[{"id":"A","text":"Терминальный модуль","correct":true},{"id":"B","text":"Модуль хоста","correct":false},{"id":"C","text":"Интерфейсный модуль","correct":false},{"id":"D","text":"Модуль управления с вычислительным узлом","correct":false},{"id":"E","text":"Модуль связи","correct":false}]},{"id":50,"question":"Модуль, выполняющий все функции, связанные с проверкой и управлением информацией после ее последовательной отправки по каналам, а также с направлением передачи информации.","answers":[{"id":"A","text":"Модуль связи","correct":true},{"id":"B","text":"Модуль хоста","correct":false},{"id":"C","text":"Терминальный модуль","correct":false},{"id":"D","text":"Интерфейсный модуль","correct":false},{"id":"E","text":"Модуль управления с вычислительным узлом","correct":false}]},{"id":51,"question":"Для интеграции высокопроизводительных модулей","answers":[{"id":"A","text":"Требуется интерфейсный модуль.","correct":true},{"id":"B","text":"Требуется модуль хоста","correct":false},{"id":"C","text":"Требуется терминальный модуль.","correct":false},{"id":"D","text":"- Требуется модуль связи","correct":false},{"id":"E","text":"Требуется модуль управления с вычислительным узлом.","correct":false}]},{"id":52,"question":"Осуществляет управление вычислительным узлом.","answers":[{"id":"A","text":"Модуль управления с вычислительным узлом","correct":true},{"id":"B","text":"Модуль хоста","correct":false},{"id":"C","text":"Терминальный модуль","correct":false},{"id":"D","text":"Модуль связи","correct":false},{"id":"E","text":"Интерфейсный модуль","correct":false}]},{"id":53,"question":"Рабочая структура вычислительного узла для определения эффективности логических модулей в технических структурах.","answers":[{"id":"A","text":"физический","correct":true},{"id":"B","text":"математический","correct":false},{"id":"C","text":"алгебраический","correct":false},{"id":"D","text":"информативный","correct":false},{"id":"E","text":"технический","correct":false}]},{"id":54,"question":"Количество основных элементов программной структуры вычислительного узла","answers":[{"id":"A","text":"2","correct":true},{"id":"B","text":"1","correct":false},{"id":"C","text":"3","correct":false},{"id":"D","text":"4","correct":false},{"id":"E","text":"5","correct":false}]},{"id":55,"question":"Точка соприкосновения между программами управления технологическим процессом и программами управления транспортировкой находится в следующем:","answers":[{"id":"A","text":"порт","correct":true},{"id":"B","text":"фрагмент","correct":false},{"id":"C","text":"процесс","correct":false},{"id":"D","text":"транспортный канал","correct":false},{"id":"E","text":"протокол","correct":false}]},{"id":56,"question":"Сложность структуры распространяемого набора информации -","answers":[{"id":"A","text":"фрагмент","correct":true},{"id":"B","text":"процесс","correct":false},{"id":"C","text":"порт","correct":false},{"id":"D","text":"транспортный канал","correct":false},{"id":"E","text":"протокол","correct":false}]},{"id":57,"question":"Количество названий фрагментов","answers":[{"id":"A","text":"2","correct":true},{"id":"B","text":"3","correct":false},{"id":"C","text":"4","correct":false},{"id":"D","text":"5","correct":false},{"id":"E","text":"6","correct":false}]},{"id":58,"question":"Линии, соединяющие управляющую программу программной структуры в вычислительном узле -","answers":[{"id":"A","text":"транспортные каналы","correct":true},{"id":"B","text":"процесс","correct":false},{"id":"C","text":"фрагмент","correct":false},{"id":"D","text":"порт","correct":false},{"id":"E","text":"протокол","correct":false}]},{"id":59,"question":"Взаимосвязь между смежными слоями программной структуры -","answers":[{"id":"A","text":"интерфейс","correct":true},{"id":"B","text":"протокол","correct":false},{"id":"C","text":"ресурс","correct":false},{"id":"D","text":"сеть","correct":false},{"id":"E","text":"сообщение","correct":false}]},{"id":60,"question":"Описана работа всей вычислительной сети.","answers":[{"id":"A","text":"в протоколах","correct":true},{"id":"B","text":"в ресурсах","correct":false},{"id":"C","text":"онлайн","correct":false},{"id":"D","text":"в сообщении","correct":false},{"id":"E","text":"на интерфейсе","correct":false}]},{"id":61,"question":"На сколько групп разделены протоколы?","answers":[{"id":"A","text":"3","correct":true},{"id":"B","text":"2","correct":false},{"id":"C","text":"4","correct":false},{"id":"D","text":"5","correct":false},{"id":"E","text":"6","correct":false}]},{"id":62,"question":"Сколько существует типов многомашинных ассоциаций?","answers":[{"id":"A","text":"3","correct":true},{"id":"B","text":"4","correct":false},{"id":"C","text":"5","correct":false},{"id":"D","text":"6","correct":false},{"id":"E","text":"7","correct":false}]},{"id":63,"question":"Как просто дать название терминальному комплексу","answers":[{"id":"A","text":"Условный","correct":true},{"id":"B","text":"Логический","correct":false},{"id":"C","text":"Интеграл","correct":false},{"id":"D","text":"Находчивый","correct":false},{"id":"E","text":"Коммуникация","correct":false}]},{"id":64,"question":"Новый тип многомашинного объединения –","answers":[{"id":"A","text":"Компьютерный центр","correct":true},{"id":"B","text":"Вычислительный комплекс","correct":false},{"id":"C","text":"Терминальный комплекс","correct":false},{"id":"D","text":"Математические модели","correct":false},{"id":"E","text":"Обработка информации на компьютерах","correct":false}]},{"id":65,"question":"Системы, входящие в состав вычислительного комплекса...","answers":[{"id":"A","text":"Информация и справочные материалы","correct":true},{"id":"B","text":"Телеобработка информации","correct":false},{"id":"C","text":"Информация о земном шаре","correct":false},{"id":"D","text":"Широкий спектр в целом","correct":false},{"id":"E","text":"На отдельных компьютерах","correct":false}]},{"id":66,"question":"Цифровой вычислительный комплекс считается...","answers":[{"id":"A","text":"простые задачи, связанные с внешними структурами и памятью","correct":true},{"id":"B","text":"отчеты о производственном процессе","correct":false},{"id":"C","text":"одна или несколько вычислительных машин","correct":false},{"id":"D","text":"небольшие калькуляторы собственного импеданса","correct":false},{"id":"E","text":"отдельные вычислительные машины","correct":false}]},{"id":67,"question":"Какие услуги предоставляет пользователю вычислительная сеть?","answers":[{"id":"A","text":"Информационные системы и математические программы, инструменты для проведения интервью.","correct":true},{"id":"B","text":"Информационные системы и логические программы, инструменты для создания правил диалога.","correct":false},{"id":"C","text":"в технологических отчетах о производстве","correct":false},{"id":"D","text":"Обработка информации на компьютерах","correct":false},{"id":"E","text":"На одном или нескольких компьютерах","correct":false}]},{"id":68,"question":"Единый тип пользовательского канала для создания машин, работающих с вычислительной сетью...","answers":[{"id":"A","text":"SDLC","correct":true},{"id":"B","text":"MDLC","correct":false},{"id":"C","text":"Cdlc","correct":false},{"id":"D","text":"Рдлк","correct":false},{"id":"E","text":"Фдлк","correct":false}]},{"id":69,"question":"Односторонний режим передачи данных","answers":[{"id":"A","text":"симплекс","correct":true},{"id":"B","text":"сложный","correct":false},{"id":"C","text":"терминальный комплекс","correct":false},{"id":"D","text":"вычислительный комплекс","correct":false},{"id":"E","text":"математические модели","correct":false}]},{"id":70,"question":"Объём внутренней памяти, сколько бит и слов содержит каждая из них...","answers":[{"id":"A","text":"12 цифр, 4000 слов","correct":true},{"id":"B","text":"21 цифра, 2000 слов","correct":false},{"id":"C","text":"13 цифр, 4000 слов","correct":false},{"id":"D","text":"21 цифра, 4000 слов","correct":false},{"id":"E","text":"12 цифр, 5000 слов","correct":false}]},{"id":71,"question":"До скольких миллионов символов в последовательном порту система SDS-7600 может хранить данные?","answers":[{"id":"A","text":"5000 миллионов","correct":true},{"id":"B","text":"7000 миллионов","correct":false},{"id":"C","text":"2000 миллионов","correct":false},{"id":"D","text":"4000 миллионов","correct":false},{"id":"E","text":"3000 миллионов","correct":false}]},{"id":72,"question":"Как подразделяются инструменты для проведения интервью на...","answers":[{"id":"A","text":"3","correct":true},{"id":"B","text":"4","correct":false},{"id":"C","text":"6","correct":false},{"id":"D","text":"5","correct":false},{"id":"E","text":"2","correct":false}]},{"id":73,"question":"Вычислительный комплекс –","answers":[{"id":"A","text":"Программы, используемые для решения конкретных проблем.","correct":true},{"id":"B","text":"Программы, интегрирующие внешние структуры","correct":false},{"id":"C","text":"Центральный электронный переключатель во внешней конструкции","correct":false},{"id":"D","text":"Информационные системы и математические программы, инструменты для проведения интервью.","correct":false},{"id":"E","text":"Информационные системы и логические программы, инструменты для создания правил диалога.","correct":false}]},{"id":74,"question":"Какие существуют типы структур вычислительных сетей?","answers":[{"id":"A","text":"5","correct":true},{"id":"B","text":"6","correct":false},{"id":"C","text":"8","correct":false},{"id":"D","text":"3","correct":false},{"id":"E","text":"2","correct":false}]},{"id":75,"question":"Какой элемент вычислительного узла хост-модуля представляет собой...?","answers":[{"id":"A","text":"основной","correct":true},{"id":"B","text":"самый важный","correct":false},{"id":"C","text":"Терминал","correct":false},{"id":"D","text":"информативный","correct":false},{"id":"E","text":"информационный - справочный","correct":false}]},{"id":76,"question":"После последовательной передачи данных по каналам устройство выполняет все функции, связанные с их проверкой и управлением, а также направлением информации...","answers":[{"id":"A","text":"коммуникационный модуль","correct":true},{"id":"B","text":"модуль хоста","correct":false},{"id":"C","text":"модуль управления вычислительным узлом","correct":false},{"id":"D","text":"интерфейсный модуль","correct":false},{"id":"E","text":"терминальный модуль","correct":false}]},{"id":77,"question":"Локальная сеть — это сеть из нескольких компьютеров, соединенных между собой.","answers":[{"id":"A","text":"Интранет","correct":true},{"id":"B","text":"Интернет","correct":false},{"id":"C","text":"Интернет","correct":false},{"id":"D","text":"Модуль связи","correct":false},{"id":"E","text":"Модуль хоста","correct":false}]},{"id":78,"question":"Какой ответ верен для сетей с одним рангом?","answers":[{"id":"A","text":"На основе сетей, содержащих не более десяти пользователей.","correct":true},{"id":"B","text":"обеспечивает надежный уровень защиты и контроля","correct":false},{"id":"C","text":"требуется мощный централизованный сервер","correct":false},{"id":"D","text":"пользователи работают в глобальной сети","correct":false},{"id":"E","text":"не требует мощного централизованного сервера","correct":false}]},{"id":79,"question":"Основные характеристики сети с «кольцевой» топологией:","answers":[{"id":"A","text":"Требует меньше кабелей, чем другие топологии.","correct":true},{"id":"B","text":"Система доставки проста и недорога.","correct":false},{"id":"C","text":"Все компьютеры используются одинаково.","correct":false},{"id":"D","text":"Для корректной работы необходим терминатор.","correct":false},{"id":"E","text":"Система доставки сложна и дорогостояща.","correct":false}]},{"id":80,"question":"Характеристики сетей с топологией «шина»:","answers":[{"id":"A","text":"Система доставки проста и недорога.","correct":true},{"id":"B","text":"Требует меньше кабелей, чем другие топологии.","correct":false},{"id":"C","text":"Все компьютеры используются одинаково.","correct":false},{"id":"D","text":"Для корректной работы необходим терминатор.","correct":false},{"id":"E","text":"Нагрузка на компьютеры одинакова.","correct":false}]},{"id":81,"question":"Характеристики сетей со звездообразной топологией:","answers":[{"id":"A","text":"централизует управление и контроль сети.","correct":true},{"id":"B","text":"обеспечивает надежный уровень защиты и контроля","correct":false},{"id":"C","text":"требуется мощный централизованный сервер","correct":false},{"id":"D","text":"пользователи работают в глобальной сети","correct":false},{"id":"E","text":"пользователи работают с большой сетью","correct":false}]},{"id":82,"question":"Какая топология является пассивной?","answers":[{"id":"A","text":"звездное кольцо","correct":true},{"id":"B","text":"шина","correct":false},{"id":"C","text":"с отправкой маркера","correct":false},{"id":"D","text":"кольцо","correct":false},{"id":"E","text":"смешанный","correct":false}]},{"id":83,"question":"Используется для нормализации сигналов в узкополосных системах.","answers":[{"id":"A","text":"ретрансляторы","correct":true},{"id":"B","text":"усилители","correct":false},{"id":"C","text":"батарейки","correct":false},{"id":"D","text":"блок питания","correct":false},{"id":"E","text":"системный блок","correct":false}]},{"id":84,"question":"Линии, соединяющие сеть и управляющую программу в вычислительном узле, называются .........","answers":[{"id":"A","text":"транспортные каналы","correct":true},{"id":"B","text":"протоколы расчетных сетей","correct":false},{"id":"C","text":"распределение","correct":false},{"id":"D","text":"фрагмент","correct":false},{"id":"E","text":"протоколы","correct":false}]},{"id":85,"question":"Что представляет собой вычислительный комплекс в качестве программного обеспечения?","answers":[{"id":"A","text":"для решения определённых проблем","correct":true},{"id":"B","text":"для записи данных","correct":false},{"id":"C","text":"для отчетов о подсчете","correct":false},{"id":"D","text":"Для доступа в Интернет","correct":false},{"id":"E","text":"Предназначен для определения структуры компьютера.","correct":false}]},{"id":86,"question":"Что может входить в состав вычислительной системы?","answers":[{"id":"A","text":"процессор, память, структура хранения данных на диске и компакт-диске, ввод/вывод, печать на бумаге","correct":true},{"id":"B","text":"блок питания, стример, жесткий диск, дисковод","correct":false},{"id":"C","text":"CD-ROM и DVD","correct":false},{"id":"D","text":"материнская плата, принтер, жесткий диск, дисковод, CD-ROM устройства","correct":false},{"id":"E","text":"компьютерные вирусы","correct":false}]},{"id":87,"question":"Приёмники называются...","answers":[{"id":"A","text":"точка доступа","correct":true},{"id":"B","text":"мост","correct":false},{"id":"C","text":"разъем","correct":false},{"id":"D","text":"ретранслятор","correct":false},{"id":"E","text":"с системным блоком","correct":false}]},{"id":88,"question":"Можно удлинить кабель без усиления сигнала:","answers":[{"id":"A","text":"с цилиндрическим соединителем","correct":true},{"id":"B","text":"с терминатором","correct":false},{"id":"C","text":"с ретранслятором","correct":false},{"id":"D","text":"с концентратором","correct":false},{"id":"E","text":"с модемом","correct":false}]},{"id":89,"question":"Что мы подразумеваем под идентичностью пользовательской программы и элементами управления сеансом, которые связывают пользовательскую программу?","answers":[{"id":"A","text":"процесс","correct":true},{"id":"B","text":"лаял","correct":false},{"id":"C","text":"узел","correct":false},{"id":"D","text":"машина","correct":false},{"id":"E","text":"порт","correct":false}]},{"id":90,"question":"Что такое порт?","answers":[{"id":"A","text":"Мы имеем в виду точку между технологическим процессом и программой контроля транспортировки.","correct":true},{"id":"B","text":"описывает взаимоотношения между пользователем и его сторонником.","correct":false},{"id":"C","text":"интерпретируется как распределение","correct":false},{"id":"D","text":"базовый расчет расчетов troab","correct":false},{"id":"E","text":"нет четкого определения","correct":false}]},{"id":91,"question":"Фрагмент — это...","answers":[{"id":"A","text":"сложность структуры распределенного набора информации","correct":true},{"id":"B","text":"точка между процессом и транспортировкой","correct":false},{"id":"C","text":"порт","correct":false},{"id":"D","text":"это сеть","correct":false},{"id":"E","text":"узел маршрутизации пакетов","correct":false}]},{"id":92,"question":"Количество тем во фрагменте","answers":[{"id":"A","text":"2","correct":true},{"id":"B","text":"1","correct":false},{"id":"C","text":"нет","correct":false},{"id":"D","text":"3","correct":false},{"id":"E","text":"4","correct":false}]},{"id":93,"question":"Показать заголовок фрагмента -","answers":[{"id":"A","text":"процесс и распределение","correct":true},{"id":"B","text":"только дистрибуция","correct":false},{"id":"C","text":"просто процесс","correct":false},{"id":"D","text":"фрагментные элементы","correct":false},{"id":"E","text":"порт","correct":false}]},{"id":94,"question":"Что такое транспортный канал?","answers":[{"id":"A","text":"линия, соединяющая сеть с управляющей программой в вычислительном узле.","correct":true},{"id":"B","text":"точка, расположенная между технологическим процессом и программой управления транспортировкой.","correct":false},{"id":"C","text":"сложность структуры сбора информации;","correct":false},{"id":"D","text":"фрагментные элементы","correct":false},{"id":"E","text":"Линия, разделяющая сеть и управляющую программу в вычислительном узле.","correct":false}]},{"id":95,"question":"Что такое сеть?","answers":[{"id":"A","text":"интегрированная группа компьютеров или других устройств","correct":true},{"id":"B","text":"локальная сеть","correct":false},{"id":"C","text":"локальная сеть","correct":false},{"id":"D","text":"обмен информацией внутри учреждения","correct":false},{"id":"E","text":"просто процесс","correct":false}]},{"id":96,"question":"Типы компьютерных сетей -","answers":[{"id":"A","text":"территориальный, региональный, местный","correct":true},{"id":"B","text":"район, регион","correct":false},{"id":"C","text":"территориальный региональный местный корпоративный","correct":false},{"id":"D","text":"интернет","correct":false},{"id":"E","text":"веб","correct":false}]},{"id":97,"question":"Серверная машина","answers":[{"id":"A","text":"компьютер с общими ресурсами","correct":true},{"id":"B","text":"компьютер с модемным подключением","correct":false},{"id":"C","text":"физическое расположение компьютеров относительно друг друга","correct":false},{"id":"D","text":"компьютерная память","correct":false},{"id":"E","text":"глобальная система","correct":false}]},{"id":98,"question":"Офисное программное обеспечение для работы в глобальной сети?","answers":[{"id":"A","text":"Интернет-Проверка","correct":true},{"id":"B","text":"программы местных коммуникационных сетей","correct":false},{"id":"C","text":"корпоративная программа налаживания деловых связей","correct":false},{"id":"D","text":"модем","correct":false},{"id":"E","text":"Интернет","correct":false}]},{"id":99,"question":"На какой сети основан Интернет?","answers":[{"id":"A","text":"Арпанет","correct":true},{"id":"B","text":"CompuServer","correct":false},{"id":"C","text":"Америка на Лине","correct":false},{"id":"D","text":"Сеть MS","correct":false},{"id":"E","text":"Доктор Веб","correct":false}]},{"id":100,"question":"Интернет — это","answers":[{"id":"A","text":"Всемирная паутина","correct":true},{"id":"B","text":"локальная компьютерная сеть между учреждениями","correct":false},{"id":"C","text":"национальная компьютерная сеть","correct":false},{"id":"D","text":"выделенная компьютерная сеть","correct":false},{"id":"E","text":"локальная сеть","correct":false}]},{"id":101,"question":"Простейшая топология сети","answers":[{"id":"A","text":"шина","correct":true},{"id":"B","text":"звезда","correct":false},{"id":"C","text":"овальной формы","correct":false},{"id":"D","text":"асимметрия","correct":false},{"id":"E","text":"кольцо","correct":false}]},{"id":102,"question":"Опишите роль электронной почты в интернете.","answers":[{"id":"A","text":"Адрес электронной почты","correct":true},{"id":"B","text":"испытательное устройство","correct":false},{"id":"C","text":"база данных","correct":false},{"id":"D","text":"игра","correct":false},{"id":"E","text":"работа с текстом","correct":false}]},{"id":103,"question":"Как называется устройство, преобразующее цифровую информацию в сигналы и сообщения по телефонным каналам?","answers":[{"id":"A","text":"модем","correct":true},{"id":"B","text":"компьютер","correct":false},{"id":"C","text":"аптека","correct":false},{"id":"D","text":"телетайп","correct":false},{"id":"E","text":"телефон","correct":false}]},{"id":104,"question":"Какое устройство необходимо для подключения компьютеров к локальной сети?","answers":[{"id":"A","text":"сетевая среда","correct":true},{"id":"B","text":"ТВ-тюнер","correct":false},{"id":"C","text":"видеокарта","correct":false},{"id":"D","text":"шина","correct":false},{"id":"E","text":"тренироваться","correct":false}]},{"id":105,"question":"Какой специальный символ используется при написании адреса электронной почты?","answers":[{"id":"A","text":"@","correct":true},{"id":"B","text":"*","correct":false},{"id":"C","text":"#","correct":false},{"id":"D","text":"&","correct":false},{"id":"E","text":"$","correct":false}]},{"id":106,"question":"Программа, позволяющая напрямую взаимодействовать с другими компьютерами, подключенными к Интернету?","answers":[{"id":"A","text":"Чат","correct":true},{"id":"B","text":"UseNet","correct":false},{"id":"C","text":"электронная почта","correct":false},{"id":"D","text":"Суслик","correct":false},{"id":"E","text":"телнет","correct":false}]},{"id":107,"question":"Для просмотра других компьютерных ресурсов в локальной сети любой пользователь...","answers":[{"id":"A","text":"Необходимо предоставить возможность перераспределять ресурсы.","correct":true},{"id":"B","text":"Доступ к ресурсу должен быть зашифрован.","correct":false},{"id":"C","text":"Для использования ресурса без изменений необходимо получить разрешение.","correct":false},{"id":"D","text":"Ресурсу необходимо предоставить глобальный доступ.","correct":false},{"id":"E","text":"Возможность изменять ресурсы предоставляться не должна.","correct":false}]},{"id":108,"question":"Зачем нужна электронная почта?","answers":[{"id":"A","text":"для обмена текстовой информацией между различными компьютерными системами","correct":true},{"id":"B","text":"Чтобы просмотреть страницу www","correct":false},{"id":"C","text":"поиск информации на сервере","correct":false},{"id":"D","text":"доступ в Интернет","correct":false},{"id":"E","text":"Интернет-провайдер","correct":false}]},{"id":109,"question":"ВВС","answers":[{"id":"A","text":"Всемирная паутина","correct":true},{"id":"B","text":"ФТП","correct":false},{"id":"C","text":"TCP/IP","correct":false},{"id":"D","text":"Электронная почта","correct":false},{"id":"E","text":"Windows Всемирная паутина","correct":false}]},{"id":110,"question":"Длина IP-адреса составляет -","answers":[{"id":"A","text":"Состоит из 32 бит, разделенных на 2 или 3 части.","correct":true},{"id":"B","text":"Состоит из 38 бит, разделенных на 2 или 3 части.","correct":false},{"id":"C","text":"Состоит из 64 бит, разделенных на 2 или 3 части.","correct":false},{"id":"D","text":"Состоит из 28 бит, разделенных на 2 или 3 части.","correct":false},{"id":"E","text":"Состоит из 42 бит, разделенных на 2 или 3 части.","correct":false}]},{"id":111,"question":"Отправка сообщений по электронной почте...","answers":[{"id":"A","text":"Электронная почта","correct":true},{"id":"B","text":"www","correct":false},{"id":"C","text":"Интернет","correct":false},{"id":"D","text":"электронная почта","correct":false},{"id":"E","text":"Email.www","correct":false}]}],
+  html: [{"id":1,"question":"Как называется сетевая система, которая позволяет любому компьютеру обмениваться и передавать информацию по всему миру?","answers":[{"id":"A","text":"Интернет","correct":true},{"id":"B","text":"Сеть","correct":false},{"id":"C","text":"Сервер","correct":false},{"id":"D","text":"Протокол","correct":false},{"id":"E","text":"Мессенджер","correct":false}]},{"id":2,"question":"Как называется особый способ соединения компьютеров друг с другом в локальной сети?","answers":[{"id":"A","text":"Клиент-сервер","correct":true},{"id":"B","text":"Сервер","correct":false},{"id":"C","text":"Интернет-сеть","correct":false},{"id":"D","text":"Протокол","correct":false},{"id":"E","text":"Платеж","correct":false}]},{"id":3,"question":"протокол передачи файлов","answers":[{"id":"A","text":"ФТП","correct":true},{"id":"B","text":".PTP","correct":false},{"id":"C","text":"LDAP","correct":false},{"id":"D","text":"TCP/IP","correct":false},{"id":"E","text":"VPN","correct":false}]},{"id":4,"question":"Какие тексты можно читать на компьютере или другом электронном устройстве?","answers":[{"id":"A","text":"Гипертекст","correct":true},{"id":"B","text":"Гипермедиа","correct":false},{"id":"C","text":"Гиперссылка","correct":false},{"id":"D","text":"Тексты","correct":false},{"id":"E","text":"Файл","correct":false}]},{"id":5,"question":"Ученый, изобретший HTML","answers":[{"id":"A","text":"Тим Бернерс-Ли","correct":true},{"id":"B","text":"Андрис ван Дам","correct":false},{"id":"C","text":"Тед Нельсон","correct":false},{"id":"D","text":"Тим –Бриттани-Ли","correct":false},{"id":"E","text":"Марко ван Бастен","correct":false}]},{"id":6,"question":"Ниже перечислены нестандартные теги:","answers":[{"id":"A","text":"<hr>, <img>","correct":true},{"id":"B","text":"<html></html>,","correct":false},{"id":"C","text":"<hl></hl>","correct":false},{"id":"D","text":"<p></p>","correct":false},{"id":"E","text":"<https></https>","correct":false}]},{"id":7,"question":"Какой тег используется для создания заголовка строки заголовка?","answers":[{"id":"A","text":"<title></title>","correct":true},{"id":"B","text":"<body></body>","correct":false},{"id":"C","text":"<html></html>","correct":false},{"id":"D","text":"<big> </big>","correct":false},{"id":"E","text":"<name></name>","correct":false}]},{"id":8,"question":"Какой тег используется для выделения текста жирным шрифтом?","answers":[{"id":"A","text":"<B>","correct":true},{"id":"B","text":"<I>","correct":false},{"id":"C","text":"<U>","correct":false},{"id":"D","text":"<P>","correct":false},{"id":"E","text":"<S>","correct":false}]},{"id":9,"question":"Какой термин ввёл в обиход Тед Нельсон в 1963 году?","answers":[{"id":"A","text":"Гипертекст","correct":true},{"id":"B","text":"Дескриптор","correct":false},{"id":"C","text":"Ярлык","correct":false},{"id":"D","text":"HTML","correct":false},{"id":"E","text":"Сервер","correct":false}]},{"id":10,"question":"Основной текст располагается в теле документа между тегами ........... Замените многоточие соответствующим словом.","answers":[{"id":"A","text":"<head></head>","correct":true},{"id":"B","text":"<html></html>","correct":false},{"id":"C","text":"<title></title>","correct":false},{"id":"D","text":"<body></body>","correct":false},{"id":"E","text":"<air> </air>","correct":false}]},{"id":11,"question":"Какова функция тега <BR>?","answers":[{"id":"A","text":"Оставьте пустую строку","correct":true},{"id":"B","text":"Кнопка","correct":false},{"id":"C","text":"Выделить текст","correct":false},{"id":"D","text":"Создание рамки","correct":false},{"id":"E","text":"тимбилдинг","correct":false}]},{"id":12,"question":"Какой тег используется для установки размера шрифта, превышающего базовый размер шрифта?","answers":[{"id":"A","text":"<БОЛЬШОЙ>","correct":true},{"id":"B","text":"<BR>","correct":false},{"id":"C","text":"<Подпись>","correct":false},{"id":"D","text":"<HR>","correct":false},{"id":"E","text":"<FR>","correct":false}]},{"id":13,"question":"Укажите тег, используемый для разделения текста на абзацы.","answers":[{"id":"A","text":"<P></P>","correct":true},{"id":"B","text":"<H1>","correct":false},{"id":"C","text":"<BR>","correct":false},{"id":"D","text":"<U>","correct":false},{"id":"E","text":"<R>","correct":false}]},{"id":14,"question":"Что реализует список в <UL>?","answers":[{"id":"A","text":"Маркированный список","correct":true},{"id":"B","text":"Пронумерованный список","correct":false},{"id":"C","text":"Список определений","correct":false},{"id":"D","text":"Правильный ответ не показан.","correct":false},{"id":"E","text":"Запланированный список","correct":false}]},{"id":15,"question":"Web – Название тега, используемого для создания таблицы в документе.","answers":[{"id":"A","text":"<таблица>","correct":true},{"id":"B","text":"<Подпись>","correct":false},{"id":"C","text":"<РАМКА>","correct":false},{"id":"D","text":"<ШРИФТ>","correct":false},{"id":"E","text":"<правая>","correct":false}]},{"id":16,"question":"Отображение HTML-документов одновременно на странице браузера.","answers":[{"id":"A","text":"Рамки","correct":true},{"id":"B","text":"Формы","correct":false},{"id":"C","text":"веб-страница","correct":false},{"id":"D","text":"Списки","correct":false},{"id":"E","text":"Серверы","correct":false}]},{"id":17,"question":"Укажите атрибут, определяющий количество вертикальных кадров.","answers":[{"id":"A","text":"столбцы","correct":true},{"id":"B","text":"ряды","correct":false},{"id":"C","text":"цвет","correct":false},{"id":"D","text":"выровнять","correct":false},{"id":"E","text":"основной","correct":false}]},{"id":18,"question":"Какова функция атрибута Rows?","answers":[{"id":"A","text":"Возвращает количество горизонтальных кадров.","correct":true},{"id":"B","text":"Возвращает количество вертикальных кадров.","correct":false},{"id":"C","text":"Возвращает количество горизонтальных фигур","correct":false},{"id":"D","text":"Указывает количество вертикальных фигур","correct":false},{"id":"E","text":"Восстанавливает формы","correct":false}]},{"id":19,"question":"Как ещё можно назвать этот тег?","answers":[{"id":"A","text":"Дескриптор","correct":true},{"id":"B","text":"Код","correct":false},{"id":"C","text":"Веб-тег","correct":false},{"id":"D","text":"Дизайнер","correct":false},{"id":"E","text":"Верхний/нижний колонтитул","correct":false}]},{"id":20,"question":"Покажите синтаксис для записи поля пароля.","answers":[{"id":"A","text":"<input type=\"text\" name \"password\"/>","correct":true},{"id":"B","text":"<input type=\"text\" name \"firstname\"/>","correct":false},{"id":"C","text":"<input type=\"text\" name \"user\"/>","correct":false},{"id":"D","text":"<input type=\"text\" name \"lastname\"/>","correct":false},{"id":"E","text":"<input type=\"text\" name \"person\"/>","correct":false}]},{"id":21,"question":"Что такое TCP/IP?","answers":[{"id":"A","text":"Протокол, контролирующий прием/передачу информации.","correct":true},{"id":"B","text":"программа сортировки информации","correct":false},{"id":"C","text":"сеть хранения информации","correct":false},{"id":"D","text":"Интернет-адрес","correct":false},{"id":"E","text":"Антивирус","correct":false}]},{"id":22,"question":"Из скольких частей (чисел) состоит IP-адрес?","answers":[{"id":"A","text":"4 части (числа), разделённые точкой.","correct":true},{"id":"B","text":"5 чисел, разделённых дефисом.","correct":false},{"id":"C","text":"Из 10 чисел в последовательности","correct":false},{"id":"D","text":"2 цифры","correct":false},{"id":"E","text":"Из 4 сложенных цифр","correct":false}]},{"id":23,"question":"Что такое браузер?","answers":[{"id":"A","text":"Программа на компьютере","correct":true},{"id":"B","text":"Антивирус","correct":false},{"id":"C","text":"Уборщик","correct":false},{"id":"D","text":"Интернет","correct":false},{"id":"E","text":"БАРАН","correct":false}]},{"id":24,"question":"Основная функция браузерной программы:","answers":[{"id":"A","text":"Откройте веб-страницу по введенному адресу.","correct":true},{"id":"B","text":"Управление компьютером","correct":false},{"id":"C","text":"Изобретение новых идей","correct":false},{"id":"D","text":"Скрыть IP-адрес","correct":false},{"id":"E","text":"Написание веб-ссылок","correct":false}]},{"id":25,"question":"Какой код используется для отправки электронных писем пользователю в компьютерной сети?","answers":[{"id":"A","text":"Двоичный","correct":true},{"id":"B","text":"Шестнадцатеричная система счисления","correct":false},{"id":"C","text":"Графический подход","correct":false},{"id":"D","text":"Цифровой","correct":false},{"id":"E","text":"Символический","correct":false}]},{"id":26,"question":"Символ, разделяющий две части адреса электронной почты.","answers":[{"id":"A","text":"@","correct":true},{"id":"B","text":"!","correct":false},{"id":"C","text":"*","correct":false},{"id":"D","text":"Нет.","correct":false},{"id":"E","text":":","correct":false}]},{"id":27,"question":"Из чего состоит адрес почтового сервера?","answers":[{"id":"A","text":"Из доменов","correct":true},{"id":"B","text":"Из чисел","correct":false},{"id":"C","text":"Из символов","correct":false},{"id":"D","text":"Из писем","correct":false},{"id":"E","text":"Из ничего","correct":false}]},{"id":28,"question":"Какой символ разделяет части адреса почтового сервера?","answers":[{"id":"A","text":":","correct":true},{"id":"B","text":"*","correct":false},{"id":"C","text":"!","correct":false},{"id":"D","text":"@","correct":false},{"id":"E","text":"Нет.","correct":false}]},{"id":29,"question":"Что такое FTP?","answers":[{"id":"A","text":"протокол передачи файлов","correct":true},{"id":"B","text":"программа защиты файлов","correct":false},{"id":"C","text":"Как создать программу","correct":false},{"id":"D","text":"Программа вывода гипертекста","correct":false},{"id":"E","text":"Программа для чтения гипертекста","correct":false}]},{"id":30,"question":"Популярные российские поисковые системы:","answers":[{"id":"A","text":"Рамблер, Яндекс, Апорт","correct":true},{"id":"B","text":"Google, Firefox","correct":false},{"id":"C","text":"Microsoft Edge, Google, Яндекс","correct":false},{"id":"D","text":"Бинг, Яху!","correct":false},{"id":"E","text":"Яндекс, Google, Нигма","correct":false}]},{"id":31,"question":"Что такое веб-страница?","answers":[{"id":"A","text":"Электронный документ в системе WWW","correct":true},{"id":"B","text":"Веб-сайт написан на языке HTTPS.","correct":false},{"id":"C","text":"Документ, расположенный в гипертекстовой системе.","correct":false},{"id":"D","text":"Документ написан в формате HTML.","correct":false},{"id":"E","text":"Документ хранится на жестком диске.","correct":false}]},{"id":32,"question":"Интернет — это...","answers":[{"id":"A","text":"крупномасштабная всемирная сеть","correct":true},{"id":"B","text":"локальная сеть","correct":false},{"id":"C","text":"региональная информационно-компьютерная сеть","correct":false},{"id":"D","text":"локальная информационная сеть","correct":false},{"id":"E","text":"корпоративная сеть","correct":false}]},{"id":33,"question":"В каком году появился интернет?","answers":[{"id":"A","text":"1983","correct":true},{"id":"B","text":"1993","correct":false},{"id":"C","text":"1985","correct":false},{"id":"D","text":"1982","correct":false},{"id":"E","text":"1987","correct":false}]},{"id":34,"question":"Основные ячейки интернет-сети:","answers":[{"id":"A","text":"локальная сеть","correct":true},{"id":"B","text":"хост-компьютеры","correct":false},{"id":"C","text":"Волоконно-оптические кабели с очень высокой проводимостью","correct":false},{"id":"D","text":"телефонные линии","correct":false},{"id":"E","text":"телефонные линии","correct":false}]},{"id":35,"question":"Стандартный интерфейс CGI выглядит следующим образом:","answers":[{"id":"A","text":"Реализует серверные приложения, вызываемые по URL-адресу.","correct":true},{"id":"B","text":"Волоконно-оптические кабели с очень высокой проводимостью","correct":false},{"id":"C","text":"состоит из типов компьютеров, каналов связи и механических механизмов.","correct":false},{"id":"D","text":"Состоит из типов компьютеров, их устройств и панелей управления.","correct":false},{"id":"E","text":"Состоит из различных типов компьютеров, сетевых информационных компонентов и электрооборудования.","correct":false}]},{"id":36,"question":"Протоколы, не являющиеся сетевыми протоколами:","answers":[{"id":"A","text":"HTML","correct":true},{"id":"B","text":"TCP/IP","correct":false},{"id":"C","text":"СОСКАЛЬЗЫВАТЬ","correct":false},{"id":"D","text":"ФТП","correct":false},{"id":"E","text":"ППП","correct":false}]},{"id":37,"question":"Сколько слоев имеет модель OSI?","answers":[{"id":"A","text":"Уровень 7","correct":true},{"id":"B","text":"Уровень 8","correct":false},{"id":"C","text":"Уровень 9","correct":false},{"id":"D","text":"Уровень 6","correct":false},{"id":"E","text":"Уровень 5","correct":false}]},{"id":38,"question":"Пятый слой модели OSI называется...","answers":[{"id":"A","text":"сессионный","correct":true},{"id":"B","text":"применяемый","correct":false},{"id":"C","text":"транспорт","correct":false},{"id":"D","text":"онлайн","correct":false},{"id":"E","text":"канал","correct":false}]},{"id":39,"question":"Первый слой модели OSI называется...","answers":[{"id":"A","text":"физический","correct":true},{"id":"B","text":"сессионный","correct":false},{"id":"C","text":"канал","correct":false},{"id":"D","text":"транспорт","correct":false},{"id":"E","text":"онлайн","correct":false}]},{"id":40,"question":"Общий объем информации, передаваемой через один сетевой компьютер в интернете, называется...","answers":[{"id":"A","text":"трафик","correct":true},{"id":"B","text":"расписание","correct":false},{"id":"C","text":"транзит","correct":false},{"id":"D","text":"фонд","correct":false},{"id":"E","text":"количество","correct":false}]},{"id":41,"question":"Мы называем это налаживанием связей...","answers":[{"id":"A","text":"Три слоя модели OSI","correct":true},{"id":"B","text":"Слой 2 модели OSI","correct":false},{"id":"C","text":"4 слоя модели OSI","correct":false},{"id":"D","text":"6 слоев модели OSI","correct":false},{"id":"E","text":"5 слоев модели OSI","correct":false}]},{"id":42,"question":"Мы говорим о практичности...","answers":[{"id":"A","text":"7 слоев модели OSI","correct":true},{"id":"B","text":"4 слоя модели OSI","correct":false},{"id":"C","text":"6 слоев модели OSI","correct":false},{"id":"D","text":"5 слоев модели OSI","correct":false},{"id":"E","text":"Слой 0 модели OSI","correct":false}]},{"id":43,"question":"Интернет-провайдер","answers":[{"id":"A","text":"поставщик","correct":true},{"id":"B","text":"поставщик","correct":false},{"id":"C","text":"исполнитель","correct":false},{"id":"D","text":"дилер","correct":false},{"id":"E","text":"продавец","correct":false}]},{"id":44,"question":"Коммутатор компьютера в сети называется...","answers":[{"id":"A","text":"Центр","correct":true},{"id":"B","text":"Хаб","correct":false},{"id":"C","text":"Хозяин","correct":false},{"id":"D","text":"ICQ","correct":false},{"id":"E","text":"ВАН","correct":false}]},{"id":45,"question":"Единица измерения скорости передачи данных через модем:","answers":[{"id":"A","text":"тело","correct":true},{"id":"B","text":"вши","correct":false},{"id":"C","text":"фасоль","correct":false},{"id":"D","text":"баннер","correct":false},{"id":"E","text":"Бонар","correct":false}]},{"id":46,"question":"Устройство для подключения компьютеров к сети через телефонный канал называется...","answers":[{"id":"A","text":"модем","correct":true},{"id":"B","text":"сканер","correct":false},{"id":"C","text":"порт","correct":false},{"id":"D","text":"слот","correct":false},{"id":"E","text":"сервер","correct":false}]},{"id":47,"question":"Язык разметки гипертекста называется...","answers":[{"id":"A","text":"HTML","correct":true},{"id":"B","text":"JavaScript","correct":false},{"id":"C","text":"Турбо Паскаль","correct":false},{"id":"D","text":"Дельфы","correct":false},{"id":"E","text":"C++","correct":false}]},{"id":48,"question":"Что такое веб-страница (HTML-документ)?","answers":[{"id":"A","text":"текстовый файл типа htm или htm","correct":true},{"id":"B","text":"графический файл типа gif или jpg","correct":false},{"id":"C","text":"текстовый файл типа txt или doc","correct":false},{"id":"D","text":"Двоичный файл типа Com или exe","correct":false},{"id":"E","text":"текстовый файл типа g или txt","correct":false}]},{"id":49,"question":"Укажите протокол, реализующий адресацию пакетов в сети...","answers":[{"id":"A","text":"IP","correct":true},{"id":"B","text":"TCP","correct":false},{"id":"C","text":"DNS","correct":false},{"id":"D","text":"URL","correct":false},{"id":"E","text":"НКП/ ИП","correct":false}]},{"id":50,"question":"Какова функция протокола TCP?","answers":[{"id":"A","text":"выполняет задачу отправки данных.","correct":true},{"id":"B","text":"объединяет информацию в единую систему","correct":false},{"id":"C","text":"разделяет данные на несколько частей","correct":false},{"id":"D","text":"собирает данные","correct":false},{"id":"E","text":"обрабатывает и организует данные","correct":false}]},{"id":51,"question":"Информационная составляющая сети…","answers":[{"id":"A","text":"состоит из типов компьютеров, их устройств и электрических механизмов.","correct":true},{"id":"B","text":"Состоит из типов компьютеров, их устройств, каналов связи и механизмов связи.","correct":false},{"id":"C","text":"состоит из типов компьютеров, каналов связи и механических механизмов.","correct":false},{"id":"D","text":"Состоит из типов компьютеров, их устройств и панелей управления.","correct":false},{"id":"E","text":"Состоит из различных типов компьютеров, сетевых информационных компонентов и электрооборудования.","correct":false}]},{"id":52,"question":"Какой из телефонных каналов удобнее для связи с поставщиком услуг?","answers":[{"id":"A","text":"цифровой телефонный канал","correct":true},{"id":"B","text":"Телефонный канал с дополнительным устройством AVU","correct":false},{"id":"C","text":"аналоговый телефонный канал","correct":false},{"id":"D","text":"телефонный канал с блокировщиком","correct":false},{"id":"E","text":"радиотелефонный канал","correct":false}]},{"id":53,"question":"С какого символа начинаются и заканчиваются все теги?","answers":[{"id":"A","text":"Все теги начинаются с символа «меньше» (<) и заканчиваются символом «больше» (>).","correct":true},{"id":"B","text":"Все теги начинаются с символа «открывающей кавычки» (\") и заканчиваются символом «закрывающей кавычки» (\").","correct":false},{"id":"C","text":"Все теги начинаются со знака плюс (+) и заканчиваются знаком минус (-).","correct":false},{"id":"D","text":"все тег \"звезда\" (*) символ начинается, и \"точно по делу\" с символом (.) конец","correct":false},{"id":"E","text":"Все теги начинаются с восклицательного знака (!) и заканчиваются вопросительным знаком (?).","correct":false}]},{"id":54,"question":"Какой атрибут достаточно использовать для тега <FONT>, чтобы изменить цвет шрифта?","answers":[{"id":"A","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"X\" в теге <FONT>.","correct":true},{"id":"B","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"V\" в теге <TXT>.","correct":false},{"id":"C","text":"Чтобы изменить цвет шрифта, просто добавьте атрибут COLOR-=\"C\" к тегу <BAS>.","correct":false},{"id":"D","text":"Чтобы изменить цвет шрифта, просто используйте атрибут COLOR-=\"E\" в теге <DOC>.","correct":false},{"id":"E","text":"Чтобы изменить цвет шрифта, просто добавьте атрибут COLOR-=\"F\" к тегу <COM>.","correct":false}]},{"id":55,"question":"Элемент, образующий строку таблицы:","answers":[{"id":"A","text":"ТР","correct":true},{"id":"B","text":"HR","correct":false},{"id":"C","text":"ТД","correct":false},{"id":"D","text":"БР","correct":false},{"id":"E","text":"ТХ","correct":false}]},{"id":56,"question":"Элемент ячейки, представляющий собой имя столбца или строки в таблице:","answers":[{"id":"A","text":"ТХ","correct":true},{"id":"B","text":"ТД","correct":false},{"id":"C","text":"ТР","correct":false},{"id":"D","text":"HR","correct":false},{"id":"E","text":"БР","correct":false}]},{"id":57,"question":"Какой тег используется для представления обычных ячеек:","answers":[{"id":"A","text":"ТД","correct":true},{"id":"B","text":"ТХ","correct":false},{"id":"C","text":"HR","correct":false},{"id":"D","text":"БР","correct":false},{"id":"E","text":"ТР","correct":false}]},{"id":58,"question":"Какой атрибут следует использовать для объединения ячеек столбца:","answers":[{"id":"A","text":"колспан","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"строка span","correct":false},{"id":"D","text":"клеточная закладка","correct":false},{"id":"E","text":"правила","correct":false}]},{"id":59,"question":"Какой атрибут следует использовать для объединения ячеек строки:","answers":[{"id":"A","text":"строка span","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"колспан","correct":false},{"id":"D","text":"правила","correct":false},{"id":"E","text":"клеточная закладка","correct":false}]},{"id":60,"question":"Какой атрибут используется для указания количества пустого пространства в ячейках, окружающих данные?","answers":[{"id":"A","text":"клеточная закладка","correct":true},{"id":"B","text":"расстояние между клетками","correct":false},{"id":"C","text":"фон","correct":false},{"id":"D","text":"колспан","correct":false},{"id":"E","text":"выше","correct":false}]},{"id":61,"question":"Какой атрибут типа double используется для изменения цвета заданного текста?","answers":[{"id":"A","text":"ЦВЕТ ШРИФТА","correct":true},{"id":"B","text":"BGCOLOR","correct":false},{"id":"C","text":"ЦВЕТ ТЕКСТА","correct":false},{"id":"D","text":"ШРИФТ","correct":false},{"id":"E","text":"РАЗМЕР ШРИФТА","correct":false}]},{"id":62,"question":"Какие значения принимает атрибут ALIGN?","answers":[{"id":"A","text":"левый, центр, правый, обосновать","correct":true},{"id":"B","text":"ширина, высота, свет, выравнивание","correct":false},{"id":"C","text":"свет, центр, справа, обосновать","correct":false},{"id":"D","text":"верх, середина, выравнивание, низ","correct":false},{"id":"E","text":"левый, средний, обосновать, правый","correct":false}]},{"id":63,"question":"Какой атрибут используется для вставки изображения в документ?","answers":[{"id":"A","text":"IMG","correct":true},{"id":"B","text":"КАК ДЕЛА","correct":false},{"id":"C","text":"ВСТРОЕННЫЙ","correct":false},{"id":"D","text":"ФОН","correct":false},{"id":"E","text":"ПОД","correct":false}]},{"id":64,"question":"Какой атрибут определяет структуру фреймов?","answers":[{"id":"A","text":"НАБОР РАМОК","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"РАМКА","correct":false},{"id":"D","text":"NOFRAMES","correct":false},{"id":"E","text":"ВСТРОЕННЫЙ","correct":false}]},{"id":65,"question":"Какой атрибут используется для установки информации во фреймах:","answers":[{"id":"A","text":"РАМКА","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"НАБОР РАМОК","correct":false},{"id":"D","text":"ВСТРОЕННЫЙ","correct":false},{"id":"E","text":"NOFRAMES","correct":false}]},{"id":66,"question":"Какой атрибут мы используем для работы с музыкальными файлами:","answers":[{"id":"A","text":"ВСТРОЕННЫЙ","correct":true},{"id":"B","text":"IMG","correct":false},{"id":"C","text":"СКР","correct":false},{"id":"D","text":"КАК ДЕЛА","correct":false},{"id":"E","text":"ПОД","correct":false}]},{"id":67,"question":"Атрибут, указывающий на файл, который необходимо загрузить:","answers":[{"id":"A","text":"СКР","correct":true},{"id":"B","text":"КАК ДЕЛА","correct":false},{"id":"C","text":"IMG","correct":false},{"id":"D","text":"ПОД","correct":false},{"id":"E","text":"ВСТРОЕННЫЙ","correct":false}]},{"id":68,"question":"Элемент, из которого состоит направляющая:","answers":[{"id":"A","text":"МАРКЕТ","correct":true},{"id":"B","text":"ВСТРОЕННЫЙ","correct":false},{"id":"C","text":"ВЫСОТА МАРГИНХАЙТ","correct":false},{"id":"D","text":"НАБОР РАМОК","correct":false},{"id":"E","text":"IMG","correct":false}]},{"id":69,"question":"Атрибут, указывающий, сколько раз ползунок проходит по экрану:","answers":[{"id":"A","text":"Петля","correct":true},{"id":"B","text":"Поведение","correct":false},{"id":"C","text":"Scrollamount","correct":false},{"id":"D","text":"Направление","correct":false},{"id":"E","text":"Scrolldelay","correct":false}]},{"id":70,"question":"Какой атрибут используется для обозначения скорости движения:","answers":[{"id":"A","text":"Scrollamount","correct":true},{"id":"B","text":"Направление","correct":false},{"id":"C","text":"Scrolldelay","correct":false},{"id":"D","text":"Петля","correct":false},{"id":"E","text":"Поведение","correct":false}]},{"id":71,"question":"Атрибут, управляющий полосой прокрутки в пределах определенной области:","answers":[{"id":"A","text":"Прокрутка","correct":true},{"id":"B","text":"Scrollamount","correct":false},{"id":"C","text":"Поведение","correct":false},{"id":"D","text":"Направление","correct":false},{"id":"E","text":"Scrolldelay","correct":false}]},{"id":72,"question":"Параметры атрибута SCROLING:","answers":[{"id":"A","text":"да, нет, авто","correct":true},{"id":"B","text":"слева, в центре, справа","correct":false},{"id":"C","text":"левый, средний, правый","correct":false},{"id":"D","text":"верх, центр, низ","correct":false},{"id":"E","text":"выравнивание, верх, низ","correct":false}]},{"id":73,"question":"Устройство, организующее диалог с пользователем на веб-странице:","answers":[{"id":"A","text":"форма","correct":true},{"id":"B","text":"рамка","correct":false},{"id":"C","text":"скользящая направляющая","correct":false},{"id":"D","text":"стол","correct":false},{"id":"E","text":"связь","correct":false}]},{"id":74,"question":"С какого двойного тега начинается шаблон?","answers":[{"id":"A","text":"Форма и /Форма","correct":true},{"id":"B","text":"Frame и /Frame","correct":false},{"id":"C","text":"iframe и /Iframe","correct":false},{"id":"D","text":"Frameset и /Framese","correct":false},{"id":"E","text":"Таблица и /Таблица","correct":false}]},{"id":75,"question":"Какой атрибут используется для указания шрифта?","answers":[{"id":"A","text":"ШРИФТ","correct":true},{"id":"B","text":"ЦВЕТ ТЕКСТА","correct":false},{"id":"C","text":"ЦВЕТ ШРИФТА","correct":false},{"id":"D","text":"РАЗМЕР ШРИФТА","correct":false},{"id":"E","text":"BGCOLOR","correct":false}]},{"id":76,"question":"Команда для создания элемента управления выглядит следующим образом:","answers":[{"id":"A","text":"ВХОД","correct":true},{"id":"B","text":"ЦЕНИТЬ","correct":false},{"id":"C","text":"ТИП","correct":false},{"id":"D","text":"КНОПКА","correct":false},{"id":"E","text":"ИМЯ","correct":false}]},{"id":77,"question":"Параметр, определяющий элемент управления:","answers":[{"id":"A","text":"ТИП","correct":true},{"id":"B","text":"ВХОД","correct":false},{"id":"C","text":"ЦЕНИТЬ","correct":false},{"id":"D","text":"КНОПКА","correct":false},{"id":"E","text":"ИМЯ","correct":false}]},{"id":78,"question":"Параметр, определяющий текст, отображаемый в элементе управления:","answers":[{"id":"A","text":"ЦЕНИТЬ","correct":true},{"id":"B","text":"ИМЯ","correct":false},{"id":"C","text":"ТИП","correct":false},{"id":"D","text":"ВХОД","correct":false},{"id":"E","text":"КНОПКА","correct":false}]},{"id":79,"question":"Окно для ввода текста в одну строку:","answers":[{"id":"A","text":"TYPE=text","correct":true},{"id":"B","text":"TYPE=radio","correct":false},{"id":"C","text":"TYPE=checkbox","correct":false},{"id":"D","text":"TYPE=hidden","correct":false},{"id":"E","text":"TYPE=password","correct":false}]},{"id":80,"question":"Окно для ввода ключа:","answers":[{"id":"A","text":"TYPE=password","correct":true},{"id":"B","text":"TYPE=checkbox","correct":false},{"id":"C","text":"TYPE=text","correct":false},{"id":"D","text":"TYPE=radio","correct":false},{"id":"E","text":"TYPE=hidden","correct":false}]},{"id":81,"question":"Текстовое окно:","answers":[{"id":"A","text":"Текстовое поле","correct":true},{"id":"B","text":"Вариант","correct":false},{"id":"C","text":"Ценить","correct":false},{"id":"D","text":"Скрытый","correct":false},{"id":"E","text":"Выбирать","correct":false}]},{"id":82,"question":"Переключатель:","answers":[{"id":"A","text":"TYPE=radio","correct":true},{"id":"B","text":"TYPE=checkbox","correct":false},{"id":"C","text":"TYPE=hidden","correct":false},{"id":"D","text":"TYPE=reset","correct":false},{"id":"E","text":"TYPE=text","correct":false}]},{"id":83,"question":"Отмеченный прямоугольник:","answers":[{"id":"A","text":"TYPE=checkbox","correct":true},{"id":"B","text":"TYPE=password","correct":false},{"id":"C","text":"TYPE=text","correct":false},{"id":"D","text":"TYPE=hidden","correct":false},{"id":"E","text":"TYPE=radio","correct":false}]},{"id":84,"question":"Удалить кнопку:","answers":[{"id":"A","text":"TYPE=reset","correct":true},{"id":"B","text":"TYPE=radio","correct":false},{"id":"C","text":"TYPE=password","correct":false},{"id":"D","text":"TYPE=text","correct":false},{"id":"E","text":"TYPE=hidden","correct":false}]},{"id":85,"question":"Для создания кнопки используется следующий элемент:","answers":[{"id":"A","text":"КНОПКА","correct":true},{"id":"B","text":"ВАРИАНТ","correct":false},{"id":"C","text":"ВЫБИРАТЬ","correct":false},{"id":"D","text":"ВХОД","correct":false},{"id":"E","text":"Текстовая область","correct":false}]},{"id":86,"question":"Атрибут, определяющий размер и состав кадров на экране:","answers":[{"id":"A","text":"НАБОР РАМОК","correct":true},{"id":"B","text":"IFRAME","correct":false},{"id":"C","text":"РАМКА","correct":false},{"id":"D","text":"ФОРМА","correct":false},{"id":"E","text":"NOFRAMES","correct":false}]},{"id":87,"question":"Атрибут, определяющий HTML-файл для каждого фрейма, выглядит следующим образом:","answers":[{"id":"A","text":"РАМКА","correct":true},{"id":"B","text":"НАБОР РАМОК","correct":false},{"id":"C","text":"IFRAME","correct":false},{"id":"D","text":"NOFRAMES","correct":false},{"id":"E","text":"ФОРМА","correct":false}]},{"id":88,"question":"Атрибут, не позволяющий перемещать границы фреймов с помощью мыши:","answers":[{"id":"A","text":"Изменение размера недоступно","correct":true},{"id":"B","text":"Ширина поля","correct":false},{"id":"C","text":"Без рамок","correct":false},{"id":"D","text":"Высота поля","correct":false},{"id":"E","text":"Прокрутка","correct":false}]},{"id":89,"question":"Что такое знак?","answers":[{"id":"A","text":"Указывает точку в этом документе, к которой следует перейти по ссылке.","correct":true},{"id":"B","text":"Указывает на наличие одной запятой в данном документе, которая чередуется с другой буквой.","correct":false},{"id":"C","text":"Указывает место в этом документе, которое перемещается по номеру.","correct":false},{"id":"D","text":"Указывает один цвет в этом документе, который будет чередоваться с другими цветами.","correct":false},{"id":"E","text":"Этот документ, представляющий собой последовательность изображений, раскрывает скрытую в них красоту.","correct":false}]},{"id":90,"question":"Объяснение форматов <Р ALIGN=« left» x/ P>, используемых в форматировании HTML-страниц...","answers":[{"id":"A","text":"выравнивание автомагистралей","correct":true},{"id":"B","text":"сглаживание прямых дорог","correct":false},{"id":"C","text":"сглаживание гладких дорог","correct":false},{"id":"D","text":"выравнивание обработанных дорог","correct":false},{"id":"E","text":"сглаживание изогнутых дорог","correct":false}]},{"id":91,"question":"Объяснение формата <FONT FACE=*></FONT>, используемого в HTML...","answers":[{"id":"A","text":"список шрифтов","correct":true},{"id":"B","text":"список каталога","correct":false},{"id":"C","text":"список бумаг","correct":false},{"id":"D","text":"список дисков","correct":false},{"id":"E","text":"список файлов","correct":false}]},{"id":92,"question":"Объяснение формата <А HREF=\"URL\"> TEKCT</А> для вставки гиперссылок, используемых в HTML...","answers":[{"id":"A","text":"ссылка на другую страницу","correct":true},{"id":"B","text":"ссылка на другой диск","correct":false},{"id":"C","text":"ссылка на другой файл","correct":false},{"id":"D","text":"ссылка на эту страницу","correct":false},{"id":"E","text":"ссылка на другой каталог","correct":false}]},{"id":93,"question":"В HTML используется понятие URL — унифицированный указатель ресурса...","answers":[{"id":"A","text":"универсальный указатель ресурса (веб-адрес)","correct":true},{"id":"B","text":"универсальный графический указатель (адрес документа в каталоге)","correct":false},{"id":"C","text":"универсальный указатель темы (адрес документа в файловой сети)","correct":false},{"id":"D","text":"Универсальный указатель документа (адрес документа в сети в программе)","correct":false},{"id":"E","text":"Универсальный музыкальный локатор (адрес документа в интернете для музыкальных произведений)","correct":false}]},{"id":94,"question":"<HR>","answers":[{"id":"A","text":"Этот символ обозначает горизонтальную линию.","correct":true},{"id":"B","text":"Начало и конец окна браузера в HTML-разметке","correct":false},{"id":"C","text":"Этот атрибут определяет толщину линии.","correct":false},{"id":"D","text":"Этот символ используется для перехода на новую строку без разрыва абзаца.","correct":false},{"id":"E","text":"Теперь это будет определяться шириной экрана.","correct":false}]},{"id":95,"question":"Протоколы сетевого уровня...","answers":[{"id":"A","text":"Она создается в виде программного модуля и выполняется в сети, называемой хостом, и на компьютере, называемом шлюзом, расположенном посередине.","correct":true},{"id":"B","text":"протокол управления сообщениями","correct":false},{"id":"C","text":"Протокол передачи дейтаграмм. Этот протокол предоставляет услуги маршрутизации.","correct":false},{"id":"D","text":"дополнительный протокол, решающий проблему маршрутизации на коротких путях","correct":false},{"id":"E","text":"Определяет адреса машин, используя обратный протокол ARP.","correct":false}]},{"id":96,"question":"RARP – Протокол обратного разрешения адресов – Протокол маршрутизации...","answers":[{"id":"A","text":"Определяет адреса машин, используя обратный протокол ARP.","correct":true},{"id":"B","text":"Она создается в виде программного модуля и выполняется в сети, называемой хостом, и на компьютере, называемом шлюзом, расположенном посередине.","correct":false},{"id":"C","text":"протокол управления сообщениями","correct":false},{"id":"D","text":"Протокол передачи дейтаграмм. Этот протокол предоставляет услуги маршрутизации.","correct":false},{"id":"E","text":"дополнительный протокол, решающий проблему маршрутизации на коротких путях","correct":false}]},{"id":97,"question":"NIS – Network Information Service – дополнительный протокол обслуживания...","answers":[{"id":"A","text":"хранит информацию о клиентах в интернете.","correct":true},{"id":"B","text":"отправляет информацию о маршрутизации во внутренние сети","correct":false},{"id":"C","text":"Позволяет получать доступ к файлам на удаленном компьютере так, как если бы они находились на локальном компьютере.","correct":false},{"id":"D","text":"передает информацию о маршрутизации между шлюзами.","correct":false},{"id":"E","text":"отправляет информацию о маршрутизации во внешние сети","correct":false}]},{"id":98,"question":"HTML (язык гипертекстовой разметки) — это...","answers":[{"id":"A","text":"конструктор веб-страниц","correct":true},{"id":"B","text":"язык программирования","correct":false},{"id":"C","text":"просмотрщик веб-страниц","correct":false},{"id":"D","text":"Интернет-сервер","correct":false},{"id":"E","text":"Инструмент для создания веб-страниц","correct":false}]},{"id":99,"question":"Гипертекст — это...","answers":[{"id":"A","text":"Текст, сочетающий в себе оформление, графику, видео- или аудиоинформацию.","correct":true},{"id":"B","text":"очень большой текст","correct":false},{"id":"C","text":"текст, набранный на компьютере","correct":false},{"id":"D","text":"текст, набранный крупным шрифтом","correct":false},{"id":"E","text":"страница с текстом и изображениями","correct":false}]},{"id":100,"question":"Что такое фамилия?","answers":[{"id":"A","text":"Команды разметки исходного текста HTML","correct":true},{"id":"B","text":"Операторы, используемые в HTML","correct":false},{"id":"C","text":"HTML-команды, которые создают ссылки на исходный текст.","correct":false},{"id":"D","text":"Строки, используемые в HTML","correct":false},{"id":"E","text":"Команды, которые создают ссылки на конец текста в HTML.","correct":false}]},{"id":101,"question":"Какие символы открывают и закрывают фамилию?","answers":[{"id":"A","text":"<;>","correct":true},{"id":"B","text":"(;)","correct":false},{"id":"C","text":"/;/","correct":false},{"id":"D","text":"{;}","correct":false},{"id":"E","text":"[;]","correct":false}]},{"id":102,"question":"Для чего используется тег <HEAD> ..... </HEAD>?","answers":[{"id":"A","text":"тематическая часть документа, то есть содержащая информацию о документе в целом.","correct":true},{"id":"B","text":"создать документ","correct":false},{"id":"C","text":"создать титульную страницу документа","correct":false},{"id":"D","text":"изменить название общего документа","correct":false},{"id":"E","text":"назвать документ","correct":false}]},{"id":103,"question":"Для чего используется тег <TITLE>.....</TITLE>?","answers":[{"id":"A","text":"дать документу его официальное название","correct":true},{"id":"B","text":"написать заголовок общего документа","correct":false},{"id":"C","text":"создать основной текст документа для последующего написания.","correct":false},{"id":"D","text":"создать документ","correct":false},{"id":"E","text":"создать титульную страницу документа","correct":false}]},{"id":104,"question":"Для чего используется кожа?","answers":[{"id":"A","text":"создать текст документа, который будет отображаться на экране.","correct":true},{"id":"B","text":"назвать документ","correct":false},{"id":"C","text":"написать заголовок общего документа","correct":false},{"id":"D","text":"увидеть текст, который нужно написать","correct":false},{"id":"E","text":"выдать документ","correct":false}]},{"id":105,"question":"Какие теги используются для создания подзаголовков в HTML-документах?","answers":[{"id":"A","text":"Начинается с тегов <H1> и </H1> и продолжается до тегов <H6> и </H6>.","correct":true},{"id":"B","text":"Начинается всё с тегов <H1> и </H1>.","correct":false},{"id":"C","text":"Он создается, начиная с тегов <Н6> и </Н6>.","correct":false},{"id":"D","text":"Сколько бы тегов вы ни использовали, вы всё равно это поймёте.","correct":false},{"id":"E","text":"Начинается с тегов <H1> и </H1> и продолжается до тегов <H2> и </H2>.","correct":false}]},{"id":106,"question":"Какие функциональные части содержатся в HTML-документах?","answers":[{"id":"A","text":"заголовки и абзацы","correct":true},{"id":"B","text":"тексты","correct":false},{"id":"C","text":"темы","correct":false},{"id":"D","text":"абзацы","correct":false},{"id":"E","text":"тексты и темы","correct":false}]},{"id":107,"question":"Для чего используются теги <CAPTION> и </CAPTION>?","answers":[{"id":"A","text":"дать таблице название","correct":true},{"id":"B","text":"написать заголовок общего документа","correct":false},{"id":"C","text":"дать документу его официальное название","correct":false},{"id":"D","text":"создать текст документа, который будет отображаться на экране.","correct":false},{"id":"E","text":"создать титульную страницу документа","correct":false}]}]
+};
+
+const BATCH = 20;
+const TIMER_SEC = 30;
+const CIRC = 94.25; // 2*pi*15
+
+let cfg = { mode:'batch', exam:'both' };
+let st = {};
+let timerInterval = null;
+let timerLeft = 0;
+
+function setExam(val, btn) {
+  cfg.exam = val;
+  document.querySelectorAll('.etog').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectMode(mode) {
+  cfg.mode = mode;
+  startQuiz();
+}
+
+function buildPool() {
+  let pool = cfg.exam === 'both'
+    ? [...DB.networks, ...DB.html]
+    : [...DB[cfg.exam]];
+  return shuffle(pool);
+}
+
+function startQuiz() {
+  const pool = buildPool();
+  st = {
+    pool,
+    remaining: [...pool],
+    batchQs: [],
+    batchIdx: 0,
+    batchCorrect: 0,
+    batchWrong: 0,
+    totalCorrect: 0,
+    totalWrong: 0,
+    totalAsked: 0,
+    totalQ: pool.length,
+    batchNum: 0,
+    totalBatches: Math.ceil(pool.length / BATCH),
+    answered: false
+  };
+  startNextBatch();
+}
+
+function startNextBatch() {
+  if (st.remaining.length === 0) { showFinal(); return; }
+  const take = cfg.mode === 'all' ? st.remaining.length : Math.min(BATCH, st.remaining.length);
+  st.batchQs = st.remaining.splice(0, take);
+  st.batchIdx = 0;
+  st.batchCorrect = 0;
+  st.batchWrong = 0;
+  st.batchNum++;
+  updateHdr();
+  showScreen('quiz');
+  renderQ();
+}
+
+function updateHdr() {
+  const lbl = cfg.exam === 'both' ? 'Сети + HTML'
+    : cfg.exam === 'networks' ? 'Компьютерные сети' : 'HTML и веб';
+  document.getElementById('qName').textContent = lbl;
+  const bi = document.getElementById('qBatch');
+  bi.innerHTML = cfg.mode === 'batch'
+    ? `Этап <span>${st.batchNum}</span> из <span>${st.totalBatches}</span>` : '';
+}
+
+function hasCode(str) {
+  return /<[a-zA-ZА-Яа-я]/.test(str) || str.startsWith('<') || str.includes('/>') || str.includes('</');
+}
+
+function renderQ() {
+  stopTimer();
+  const q = st.batchQs[st.batchIdx];
+  const bTotal = st.batchQs.length;
+  st.answered = false;
+
+  const pct = (st.batchIdx / bTotal) * 100;
+  document.getElementById('pbar').style.width = pct + '%';
+  document.getElementById('qCur').textContent = st.batchIdx + 1;
+  document.getElementById('qTot').textContent = bTotal;
+  document.getElementById('sC').textContent = st.batchCorrect;
+  document.getElementById('sW').textContent = st.batchWrong;
+  document.getElementById('qNum').textContent = 'Вопрос ' + (st.batchIdx + 1);
+  document.getElementById('qText').textContent = q.question;
+
+  const isLast = (st.batchIdx + 1 >= bTotal);
+  document.getElementById('nxtTxt').textContent = isLast
+    ? (cfg.mode === 'all' || st.remaining.length === 0 ? 'Завершить' : 'К итогам') : 'Следующий';
+
+  const shuffled = shuffle(q.answers);
+  const labels = ['A','B','C','D','E'];
+  const list = document.getElementById('alist');
+  list.innerHTML = '';
+  shuffled.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'abtn';
+    btn.dataset.correct = ans.correct;
+    const isCode = hasCode(ans.text);
+    btn.innerHTML = `<span class="albl">${labels[i]}</span><span class="atxt ${isCode ? '' : 'normal'}">${escHtml(ans.text)}</span>`;
+    btn.addEventListener('click', () => pick(btn, ans.correct));
+    list.appendChild(btn);
+  });
+
+  document.getElementById('fb').className = 'feedback';
+  document.getElementById('nxtwrap').classList.remove('vis');
+
+  const wrap = document.getElementById('qwrap');
+  wrap.style.animation = 'none'; wrap.offsetHeight; wrap.style.animation = '';
+
+  startTimer();
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function startTimer() {
+  timerLeft = TIMER_SEC;
+  updateTimerUI(timerLeft);
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    updateTimerUI(timerLeft);
+    if (timerLeft <= 0) {
+      stopTimer();
+      timeOut();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerUI(sec) {
+  const n = Math.max(0, sec);
+  document.getElementById('timerNum').textContent = n;
+  const offset = CIRC * (1 - n / TIMER_SEC);
+  const arc = document.getElementById('timerArc');
+  arc.style.strokeDashoffset = offset;
+  if (n <= 10) {
+    arc.style.stroke = 'var(--wrong)';
+    document.getElementById('timerNum').style.color = 'var(--wrong)';
+  } else if (n <= 20) {
+    arc.style.stroke = '#fbbf24';
+    document.getElementById('timerNum').style.color = '#fbbf24';
+  } else {
+    arc.style.stroke = 'var(--accent)';
+    document.getElementById('timerNum').style.color = 'var(--text)';
+  }
+}
+
+function timeOut() {
+  if (st.answered) return;
+  st.answered = true;
+  st.batchWrong++;
+  st.totalWrong++;
+
+  const allBtns = document.querySelectorAll('.abtn');
+  allBtns.forEach(b => {
+    b.classList.add('disabled');
+    if (b.dataset.correct === 'true') b.classList.add('reveal');
+    else b.classList.add('timeout');
+  });
+
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback wrong vis';
+  document.getElementById('fbIcon').textContent = '⏱';
+  document.getElementById('fbText').textContent = 'Время вышло! Правильный ответ выделен.';
+  document.getElementById('sW').textContent = st.batchWrong;
+  document.getElementById('nxtwrap').classList.add('vis');
+}
+
+function pick(btn, isCorrect) {
+  if (st.answered) return;
+  st.answered = true;
+  stopTimer();
+
+  const allBtns = document.querySelectorAll('.abtn');
+  allBtns.forEach(b => b.classList.add('disabled'));
+
+  const fb = document.getElementById('fb');
+  if (isCorrect) {
+    btn.classList.add('correct');
+    st.batchCorrect++; st.totalCorrect++;
+    fb.className = 'feedback correct vis';
+    document.getElementById('fbIcon').textContent = '✓';
+    document.getElementById('fbText').textContent = 'Верно!';
+  } else {
+    btn.classList.add('wrong');
+    st.batchWrong++; st.totalWrong++;
+    fb.className = 'feedback wrong vis';
+    document.getElementById('fbIcon').textContent = '✗';
+    document.getElementById('fbText').textContent = 'Неверно — правильный ответ выделен.';
+    allBtns.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('reveal'); });
+  }
+  document.getElementById('sC').textContent = st.batchCorrect;
+  document.getElementById('sW').textContent = st.batchWrong;
+  document.getElementById('nxtwrap').classList.add('vis');
+}
+
+function nextQ() {
+  st.batchIdx++;
+  st.totalAsked++;
+  if (st.batchIdx >= st.batchQs.length) {
+    cfg.mode === 'all' ? showFinal() : showBatchResult();
+  } else {
+    renderQ();
+  }
+}
+
+function showBatchResult() {
+  stopTimer();
+  const correct = st.batchCorrect;
+  const total = st.batchQs.length;
+  const pct = Math.round((correct / total) * 100);
+  const asked = st.totalAsked;
+  const allTotal = st.totalQ;
+  const overallPct = Math.round((asked / allTotal) * 100);
+  const hasMore = st.remaining.length > 0;
+
+  showScreen('batchResult');
+  document.getElementById('pbar').style.width = '100%';
+  document.getElementById('brC').textContent = correct;
+  document.getElementById('brT').textContent = total;
+
+  let title, sub;
+  if (pct >= 85) { title = '🎉 Отличный этап!'; sub = 'Вы отлично справились с этим блоком.'; }
+  else if (pct >= 60) { title = '👍 Хорошо!'; sub = 'Неплохой результат. Большинство вопросов взяты.'; }
+  else { title = '📚 Есть куда расти'; sub = 'Не страшно — повторите ошибки и идите дальше.'; }
+
+  document.getElementById('brTitle').textContent = title;
+  document.getElementById('brSub').textContent = sub;
+  setTimeout(() => { document.getElementById('brPF').style.width = overallPct + '%'; }, 100);
+  document.getElementById('brPL').textContent = asked + ' / ' + allTotal + ' пройдено';
+
+  const acts = document.getElementById('brAct');
+  acts.innerHTML = '';
+  const bh = document.createElement('button');
+  bh.className = 'bsec'; bh.textContent = 'На главную'; bh.onclick = goHome;
+  acts.appendChild(bh);
+
+  if (hasMore) {
+    const bn = document.createElement('button');
+    bn.className = 'bpri';
+    const nc = Math.min(BATCH, st.remaining.length);
+    bn.textContent = `Следующие ${nc} →`;
+    bn.onclick = startNextBatch;
+    acts.appendChild(bn);
+  } else {
+    const bf = document.createElement('button');
+    bf.className = 'bpri'; bf.textContent = 'Итоговый результат →';
+    bf.onclick = showFinal;
+    acts.appendChild(bf);
+  }
+}
+
+function showFinal() {
+  stopTimer();
+  const total = st.totalAsked || st.batchQs.length;
+  const correct = st.totalCorrect;
+  const wrong = st.totalWrong;
+  const pct = Math.round((correct / total) * 100);
+
+  showScreen('results');
+  document.getElementById('pbar').style.width = '100%';
+  document.getElementById('rC').textContent = correct;
+  document.getElementById('rW').textContent = wrong;
+  document.getElementById('rT').textContent = total;
+
+  const pe = document.getElementById('sPct');
+  pe.textContent = pct + '%';
+  const g = pct >= 70 ? 'high' : pct >= 45 ? 'mid' : 'low';
+  pe.className = 'spct ' + g;
+
+  const ring = document.getElementById('sringFill');
+  ring.className = 'sring-fill ' + (pct < 45 ? 'low' : pct < 70 ? 'mid' : '');
+  setTimeout(() => { ring.style.strokeDashoffset = 339.3 - (pct / 100) * 339.3; }, 100);
+
+  let title, sub;
+  if (pct >= 85) { title = '🎉 Превосходно!'; sub = 'Вы знаете материал на отлично. Экзамен будет сдан!'; }
+  else if (pct >= 70) { title = '👍 Хорошо!'; sub = 'Хороший результат. Ещё немного — и будет отлично.'; }
+  else if (pct >= 45) { title = '📚 Средне'; sub = 'Рекомендуем пройти ещё раз, особенно слабые темы.'; }
+  else { title = '💪 Продолжай'; sub = 'Не сдавайся — повтори материал и попробуй снова!'; }
+
+  document.getElementById('rTitle').textContent = title;
+  document.getElementById('rSub').textContent = sub;
+}
+
+function restartSame() { startQuiz(); }
+function goHome() { stopTimer(); showScreen('home'); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+</script>
+</body>
+</html>
