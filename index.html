@@ -40,7 +40,6 @@ body{
 .bg-canvas canvas{
   position:absolute;inset:0;width:100%;height:100%;
 }
-/* Soft radial glows */
 .bg-glow{
   position:fixed;inset:0;z-index:0;pointer-events:none;
 }
@@ -80,6 +79,7 @@ body{
   background:rgba(255,255,255,0.04);
   border:1px solid var(--gb);
   margin-bottom:2.5rem;
+  /* don't wrap — all 3 fit on one line with smaller padding */
 }
 .etog{
   padding:9px 22px;border-radius:100px;border:none;
@@ -87,6 +87,7 @@ body{
   font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;
   cursor:pointer;transition:all 0.2s;
   display:flex;align-items:center;gap:7px;
+  white-space:nowrap;
 }
 .etog svg{width:15px;height:15px;flex-shrink:0}
 .etog.active{background:var(--adim);color:var(--accent);border:1px solid rgba(110,231,183,0.3)}
@@ -357,15 +358,16 @@ body{
   transition:border-color 0.2s;
 }
 .timer-control:hover{border-color:rgba(110,231,183,0.2)}
-.tc-left{display:flex;align-items:center;gap:0.875rem}
+.tc-left{display:flex;align-items:center;gap:0.875rem;min-width:0;flex:1}
 .tc-icon{
   width:38px;height:38px;border-radius:10px;
   background:var(--adim);border:1px solid rgba(110,231,183,0.2);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .tc-icon svg{width:17px;height:17px;stroke:var(--accent)}
-.tc-label{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:2px}
-.tc-desc{font-size:0.75rem;color:var(--muted)}
+.tc-text{min-width:0;flex:1}
+.tc-label{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap}
+.tc-desc{font-size:0.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tc-right{display:flex;align-items:center;gap:0.6rem;flex-shrink:0}
 .tc-btn{
   width:32px;height:32px;border-radius:9px;
@@ -392,15 +394,84 @@ body{
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:10px}
 
-@media(max-width:600px){
-  .mode-grid{grid-template-columns:1fr}
-  .qhdr{padding:0.65rem 1rem;gap:0.6rem}
-  .qstats{gap:0.3rem}
-  .schip{font-size:0.7rem;padding:2px 7px}
-  .qbody{padding:1.75rem 0.875rem 4.5rem}
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE — ≤480px
+   ═══════════════════════════════════════ */
+@media(max-width:480px){
+  /* Home screen padding */
+  #home{padding:1.5rem 0.875rem;gap:1.25rem}
+  .home-inner{padding:0}
+
+  /* Exam toggle — 3 buttons in one row, smaller */
+  .exam-toggle{
+    margin-bottom:1.5rem;
+    /* slightly smaller gap/padding so all 3 fit */
+    gap:3px;
+    padding:3px;
+  }
+  .etog{
+    padding:7px 12px;
+    font-size:0.78rem;
+    gap:5px;
+  }
+  .etog svg{width:13px;height:13px}
+
+  /* Timer control — prevent text wrapping */
+  .timer-control{
+    padding:0.75rem 1rem;
+    gap:0.75rem;
+  }
+  .tc-icon{
+    width:34px;height:34px;border-radius:9px;
+  }
+  .tc-icon svg{width:15px;height:15px}
+  .tc-label{font-size:0.82rem}
+  .tc-desc{font-size:0.7rem}
+  .tc-btn{width:30px;height:30px;font-size:1rem}
+  .tc-val{font-size:1.2rem;min-width:38px}
+  .tc-unit{font-size:0.68rem}
+
+  /* Mode cards — single column, tighter */
+  .mode-grid{grid-template-columns:1fr;gap:0.75rem}
+  .mode-card{padding:1.25rem}
+  .mc-icon{width:40px;height:40px;border-radius:10px;margin-bottom:0.875rem}
+  .mc-icon svg{width:19px;height:19px}
+  .mc-name{font-size:0.98rem}
+  .mc-desc{font-size:0.79rem;margin-bottom:0.875rem}
+  .mc-tag{font-size:0.67rem;padding:2px 8px}
+
+  /* Quiz header */
+  .qhdr{padding:0.6rem 0.875rem;gap:0.5rem}
+  .qhdr-name{font-size:0.72rem}
+  .qhdr-batch{font-size:0.62rem}
+  .qctr{font-size:0.8rem}
+  .schip{font-size:0.68rem;padding:2px 7px}
+  .schip svg{width:10px;height:10px}
+
+  /* Quiz body */
+  .qbody{padding:1.5rem 0.875rem 4rem}
+  .qtext{font-size:0.98rem}
+  .abtn{padding:0.75rem 0.875rem;font-size:0.875rem;gap:0.7rem}
+  .atxt{font-size:0.82rem}
+  .atxt.normal{font-size:0.875rem}
+  .albl{width:24px;height:24px;font-size:0.65rem}
+
+  /* Results */
   .rstats{grid-template-columns:1fr 1fr}
   .rstats .rstat:last-child{grid-column:span 2}
-  .exam-toggle{flex-wrap:wrap;border-radius:14px}
+  .rcard{padding:1.75rem 1.25rem}
+  .bcard{padding:1.75rem 1.25rem}
+}
+
+/* ═══════════════════════════════════════
+   NARROW — ≤380px (iPhone SE etc)
+   ═══════════════════════════════════════ */
+@media(max-width:380px){
+  .etog{padding:6px 9px;font-size:0.72rem;gap:4px}
+  .etog svg{width:12px;height:12px}
+  .tc-label{font-size:0.78rem}
+  .tc-desc{display:none} /* hide subtitle on very narrow screens */
+  .timer-control{gap:0.5rem;padding:0.7rem 0.875rem}
 }
 </style>
 </head>
@@ -435,7 +506,7 @@ body{
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <div>
+        <div class="tc-text">
           <div class="tc-label">Таймер на вопрос</div>
           <div class="tc-desc">Настройте время до начала теста</div>
         </div>
@@ -651,93 +722,44 @@ function changeTimer(delta){
   el.className='tc-val'+(TIMER_SEC<=10?' danger':TIMER_SEC<=20?' warn':'');
   document.getElementById('tcMinus').disabled=TIMER_SEC<=TC_MIN;
   document.getElementById('tcPlus').disabled=TIMER_SEC>=TC_MAX;
-  // Update tag labels in mode cards
   document.querySelectorAll('.timer-tag-val').forEach(t=>t.textContent=TIMER_SEC+' сек');
 }
 
-/* ── ANIMATED BACKGROUND (particle dots) ── */
+/* ── ANIMATED BACKGROUND ── */
 (function(){
   const canvas=document.getElementById('bgCanvas');
   const ctx=canvas.getContext('2d');
   let W,H,particles=[];
   const N=55;
-
-  function resize(){
-    W=canvas.width=window.innerWidth;
-    H=canvas.height=window.innerHeight;
-  }
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
   resize();
   window.addEventListener('resize',resize);
-
   for(let i=0;i<N;i++){
-    particles.push({
-      x:Math.random()*window.innerWidth,
-      y:Math.random()*window.innerHeight,
-      r:Math.random()*1.4+0.3,
-      vx:(Math.random()-0.5)*0.18,
-      vy:(Math.random()-0.5)*0.18,
-      a:Math.random()*0.35+0.08,
-      hue:Math.random()<0.6?162:239
-    });
+    particles.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.4+0.3,vx:(Math.random()-0.5)*0.18,vy:(Math.random()-0.5)*0.18,a:Math.random()*0.35+0.08,hue:Math.random()<0.6?162:239});
   }
-
   function draw(){
     ctx.clearRect(0,0,W,H);
-    // Draw connections
     for(let i=0;i<particles.length;i++){
       for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x;
-        const dy=particles[i].y-particles[j].y;
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
         const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<140){
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x,particles[i].y);
-          ctx.lineTo(particles[j].x,particles[j].y);
-          const alpha=(1-dist/140)*0.07;
-          ctx.strokeStyle=`rgba(110,231,183,${alpha})`;
-          ctx.lineWidth=0.6;
-          ctx.stroke();
-        }
+        if(dist<140){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(110,231,183,${(1-dist/140)*0.07})`;ctx.lineWidth=0.6;ctx.stroke();}
       }
     }
-    // Draw dots
-    particles.forEach(p=>{
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      const col=p.hue===162?`rgba(110,231,183,${p.a})`:`rgba(129,140,248,${p.a})`;
-      ctx.fillStyle=col;
-      ctx.fill();
-    });
+    particles.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.hue===162?`rgba(110,231,183,${p.a})`:`rgba(129,140,248,${p.a})`;ctx.fill();});
   }
-
-  function update(){
-    particles.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<-10) p.x=W+10;
-      if(p.x>W+10) p.x=-10;
-      if(p.y<-10) p.y=H+10;
-      if(p.y>H+10) p.y=-10;
-    });
-  }
-
-  function loop(){
-    update(); draw();
-    requestAnimationFrame(loop);
-  }
+  function update(){particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;});}
+  function loop(){update();draw();requestAnimationFrame(loop);}
   loop();
 })();
 
-/* ── UI ── */
 function setExam(val,btn){
   cfg.exam=val;
   document.querySelectorAll('.etog').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 
-function selectMode(mode){
-  cfg.mode=mode;
-  startQuiz();
-}
+function selectMode(mode){cfg.mode=mode;startQuiz();}
 
 function buildPool(){
   let pool=cfg.exam==='both'?[...DB.networks,...DB.html]:[...DB[cfg.exam]];
@@ -746,15 +768,7 @@ function buildPool(){
 
 function startQuiz(){
   const pool=buildPool();
-  st={
-    pool,remaining:[...pool],
-    batchQs:[],batchIdx:0,
-    batchCorrect:0,batchWrong:0,
-    totalCorrect:0,totalWrong:0,totalAsked:0,
-    totalQ:pool.length,
-    batchNum:0,totalBatches:Math.ceil(pool.length/BATCH),
-    answered:false
-  };
+  st={pool,remaining:[...pool],batchQs:[],batchIdx:0,batchCorrect:0,batchWrong:0,totalCorrect:0,totalWrong:0,totalAsked:0,totalQ:pool.length,batchNum:0,totalBatches:Math.ceil(pool.length/BATCH),answered:false};
   startNextBatch();
 }
 
@@ -763,9 +777,7 @@ function startNextBatch(){
   const take=cfg.mode==='all'?st.remaining.length:Math.min(BATCH,st.remaining.length);
   st.batchQs=st.remaining.splice(0,take);
   st.batchIdx=0;st.batchCorrect=0;st.batchWrong=0;st.batchNum++;
-  updateHdr();
-  showScreen('quiz');
-  renderQ();
+  updateHdr();showScreen('quiz');renderQ();
 }
 
 function updateHdr(){
@@ -782,7 +794,6 @@ function renderQ(){
   const q=st.batchQs[st.batchIdx];
   const bT=st.batchQs.length;
   st.answered=false;
-
   document.getElementById('pbar').style.width=(st.batchIdx/bT*100)+'%';
   document.getElementById('qCur').textContent=st.batchIdx+1;
   document.getElementById('qTot').textContent=bT;
@@ -790,24 +801,19 @@ function renderQ(){
   document.getElementById('sW').textContent=st.batchWrong;
   document.getElementById('qNum').textContent='Вопрос '+(st.batchIdx+1);
   document.getElementById('qText').textContent=q.question;
-
   const isLast=(st.batchIdx+1>=bT);
-  document.getElementById('nxtTxt').textContent=isLast
-    ?(cfg.mode==='all'||st.remaining.length===0?'Завершить':'К итогам'):'Следующий';
-
+  document.getElementById('nxtTxt').textContent=isLast?(cfg.mode==='all'||st.remaining.length===0?'Завершить':'К итогам'):'Следующий';
   const labels=['A','B','C','D','E'];
   const list=document.getElementById('alist');
   list.innerHTML='';
   shuffle(q.answers).forEach((ans,i)=>{
     const btn=document.createElement('button');
-    btn.className='abtn';
-    btn.dataset.correct=ans.correct;
+    btn.className='abtn';btn.dataset.correct=ans.correct;
     const isCode=hasCode(ans.text);
     btn.innerHTML=`<span class="albl">${labels[i]}</span><span class="atxt ${isCode?'':'normal'}">${esc(ans.text)}</span>`;
     btn.addEventListener('click',()=>pick(btn,ans.correct));
     list.appendChild(btn);
   });
-
   document.getElementById('fb').className='feedback';
   document.getElementById('nxtwrap').classList.remove('vis');
   const w=document.getElementById('qwrap');
@@ -818,15 +824,9 @@ function renderQ(){
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
 function startTimer(){
-  timerLeft=TIMER_SEC;
-  updateTimerUI(timerLeft);
-  timerInterval=setInterval(()=>{
-    timerLeft--;
-    updateTimerUI(timerLeft);
-    if(timerLeft<=0){stopTimer();timeOut();}
-  },1000);
+  timerLeft=TIMER_SEC;updateTimerUI(timerLeft);
+  timerInterval=setInterval(()=>{timerLeft--;updateTimerUI(timerLeft);if(timerLeft<=0){stopTimer();timeOut();}},1000);
 }
-
 function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
 
 function updateTimerUI(sec){
@@ -843,13 +843,8 @@ function updateTimerUI(sec){
 
 function timeOut(){
   if(st.answered)return;
-  st.answered=true;
-  st.batchWrong++;st.totalWrong++;
-  document.querySelectorAll('.abtn').forEach(b=>{
-    b.classList.add('disabled');
-    if(b.dataset.correct==='true')b.classList.add('reveal');
-    else b.classList.add('timeout');
-  });
+  st.answered=true;st.batchWrong++;st.totalWrong++;
+  document.querySelectorAll('.abtn').forEach(b=>{b.classList.add('disabled');if(b.dataset.correct==='true')b.classList.add('reveal');else b.classList.add('timeout');});
   const fb=document.getElementById('fb');
   fb.className='feedback wrong vis';
   document.getElementById('fbIcon').innerHTML='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
@@ -860,19 +855,16 @@ function timeOut(){
 
 function pick(btn,isCorrect){
   if(st.answered)return;
-  st.answered=true;
-  stopTimer();
+  st.answered=true;stopTimer();
   document.querySelectorAll('.abtn').forEach(b=>b.classList.add('disabled'));
   const fb=document.getElementById('fb');
   if(isCorrect){
-    btn.classList.add('correct');
-    st.batchCorrect++;st.totalCorrect++;
+    btn.classList.add('correct');st.batchCorrect++;st.totalCorrect++;
     fb.className='feedback correct vis';
     document.getElementById('fbIcon').innerHTML='<polyline points="20 6 9 17 4 12"/>';
     document.getElementById('fbText').textContent='Верно!';
   }else{
-    btn.classList.add('wrong');
-    st.batchWrong++;st.totalWrong++;
+    btn.classList.add('wrong');st.batchWrong++;st.totalWrong++;
     fb.className='feedback wrong vis';
     document.getElementById('fbIcon').innerHTML='<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
     document.getElementById('fbText').textContent='Неверно — правильный ответ выделен.';
@@ -885,9 +877,8 @@ function pick(btn,isCorrect){
 
 function nextQ(){
   st.batchIdx++;st.totalAsked++;
-  if(st.batchIdx>=st.batchQs.length){
-    cfg.mode==='all'?showFinal():showBatchResult();
-  }else{renderQ();}
+  if(st.batchIdx>=st.batchQs.length){cfg.mode==='all'?showFinal():showBatchResult();}
+  else{renderQ();}
 }
 
 function showBatchResult(){
@@ -911,16 +902,11 @@ function showBatchResult(){
   document.getElementById('brPL').textContent=asked+' / '+allT+' пройдено';
   const acts=document.getElementById('brAct');
   acts.innerHTML='';
-  const bh=document.createElement('button');
-  bh.className='bsec';bh.textContent='На главную';bh.onclick=goHome;acts.appendChild(bh);
+  const bh=document.createElement('button');bh.className='bsec';bh.textContent='На главную';bh.onclick=goHome;acts.appendChild(bh);
   if(hasMore){
-    const bn=document.createElement('button');
-    bn.className='bpri';
-    bn.textContent=`Следующие ${Math.min(BATCH,st.remaining.length)} →`;
-    bn.onclick=startNextBatch;acts.appendChild(bn);
+    const bn=document.createElement('button');bn.className='bpri';bn.textContent=`Следующие ${Math.min(BATCH,st.remaining.length)} →`;bn.onclick=startNextBatch;acts.appendChild(bn);
   }else{
-    const bf=document.createElement('button');
-    bf.className='bpri';bf.textContent='Итоговый результат →';bf.onclick=showFinal;acts.appendChild(bf);
+    const bf=document.createElement('button');bf.className='bpri';bf.textContent='Итоговый результат →';bf.onclick=showFinal;acts.appendChild(bf);
   }
 }
 
@@ -950,22 +936,11 @@ function showFinal(){
   document.getElementById('rSub').textContent=sub;
 }
 
-/* HOME BUTTON & MODAL */
-function askHome(){
-  document.getElementById('modalOverlay').classList.add('vis');
-}
-function closeModal(){
-  document.getElementById('modalOverlay').classList.remove('vis');
-}
-function confirmHome(){
-  closeModal();
-  stopTimer();
-  goHome();
-}
+function askHome(){document.getElementById('modalOverlay').classList.add('vis');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('vis');}
+function confirmHome(){closeModal();stopTimer();goHome();}
 
-document.getElementById('modalOverlay').addEventListener('click',function(e){
-  if(e.target===this)closeModal();
-});
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 function restartSame(){startQuiz();}
 function goHome(){stopTimer();showScreen('home');}
@@ -978,10 +953,7 @@ function showScreen(id){
 
 function shuffle(arr){
   const a=[...arr];
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a;
 }
 </script>
